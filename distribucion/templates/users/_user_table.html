@@ -1,0 +1,37 @@
+{% for u in users %}
+<tr>
+  <td class="fw-semibold">{{ u.username }}</td>
+  <td>{{ u.get_full_name|default:"—" }}</td>
+  <td>{{ u.email|default:"—" }}</td>
+  <td>
+      {% if u.profile and u.profile.role %}
+        <span class="badge bg-primary-subtle text-primary">{{ u.profile.role.get_role_type_display }}</span>
+      {% else %}
+        <span class="badge bg-secondary-subtle text-secondary">Sin rol</span>
+      {% endif %}
+  </td>
+  <td>
+    {% if u.is_active %}
+      <span class="badge bg-success-subtle text-success">Activo</span>
+    {% else %}
+      <span class="badge bg-danger-subtle text-danger">Inactivo</span>
+    {% endif %}
+  </td>
+  <td>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'users:update' u.id %}">
+      <i class="bi bi-pencil-square"></i>
+    </a>
+    <form class="d-inline" method="post" action="{% url 'users:toggle_active' u.id %}">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-outline-secondary" type="submit" title="Activar/Desactivar">
+        <i class="bi bi-power"></i>
+      </button>
+    </form>
+    <a class="btn btn-sm btn-outline-warning" href="{% url 'users:reset_password' u.id %}">
+      <i class="bi bi-key"></i>
+    </a>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="text-center py-4 text-muted">Sin resultados</td></tr>
+{% endfor %}

@@ -1,0 +1,67 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; /* solo si se necesita */
+}
+
+.course-card {
+  transition: box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.course-page-wrapper {
+  min-height: auto; /* ✅ evita redibujar cuando el contenido es bajo */
+  height: auto;
+  overflow: visible;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  color: #1d4ed8;
+}
+
+.pagination .page-link {
+  border-radius: 8px;
+  color: #1f2937;
+}
+
+.pagination .page-link:hover {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+.pagination-container {
+  padding-top: 40px;   /* 🔹 da espacio superior */
+  margin-bottom: 40px; /* 🔹 opcional para separar del fondo */
+}
+
+.pagination {
+  gap: 6px;
+}
+
+.page-item .page-link {
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 500;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.page-item .page-link:hover {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+.page-item.disabled .page-link {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border-color: #dee2e6;
+}

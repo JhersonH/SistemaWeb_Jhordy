@@ -1,0 +1,105 @@
+{% extends 'base/base_dashboard.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ is_create|yesno:"Nueva parada,Editar parada" }}{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">
+      <i class="bi bi-geo-alt-fill me-2"></i>
+      {{ is_create|yesno:"Nueva parada,Editar parada" }} – Viaje {{ trip.code }}
+    </h5>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="card shadow-sm">
+    {% csrf_token %}
+    <div class="card-body">
+      <div class="row g-3">
+
+        <div class="col-md-2">
+          <label class="form-label" for="{{ form.seq.id_for_label }}">Secuencia</label>
+          {{ form.seq|add_class:"form-control" }}
+          {% if form.seq.errors %}
+            <div class="text-danger small">{{ form.seq.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label" for="{{ form.customer_name.id_for_label }}">Cliente</label>
+          {{ form.customer_name|add_class:"form-control" }}
+          {% if form.customer_name.errors %}
+            <div class="text-danger small">{{ form.customer_name.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label" for="{{ form.address.id_for_label }}">Dirección</label>
+          {{ form.address|add_class:"form-control" }}
+          {% if form.address.errors %}
+            <div class="text-danger small">{{ form.address.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.planned_qty.id_for_label }}">Cantidad planificada</label>
+          {{ form.planned_qty|add_class:"form-control" }}
+          {% if form.planned_qty.errors %}
+            <div class="text-danger small">{{ form.planned_qty.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.delivered_qty.id_for_label }}">Cantidad entregada</label>
+          {{ form.delivered_qty|add_class:"form-control" }}
+          {% if form.delivered_qty.errors %}
+            <div class="text-danger small">{{ form.delivered_qty.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.status.id_for_label }}">Estado</label>
+          {{ form.status|add_class:"form-select" }}
+          {% if form.status.errors %}
+            <div class="text-danger small">{{ form.status.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.signature_name.id_for_label }}">Nombre quien firma</label>
+          {{ form.signature_name|add_class:"form-control" }}
+          {% if form.signature_name.errors %}
+            <div class="text-danger small">{{ form.signature_name.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.pod_photo.id_for_label }}">Foto POD</label>
+          {{ form.pod_photo|add_class:"form-control" }}
+          {% if form.pod_photo.errors %}
+            <div class="text-danger small">{{ form.pod_photo.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="{{ form.notes.id_for_label }}">Notas</label>
+          {{ form.notes|add_class:"form-control" }}
+          {% if form.notes.errors %}
+            <div class="text-danger small">{{ form.notes.errors }}</div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card-footer text-end">
+      <a href="{% url 'transport:stop_list' trip.id %}" class="btn btn-light me-2">
+        <i class="bi bi-x-circle"></i> Cancelar
+      </a>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-circle"></i> Guardar
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

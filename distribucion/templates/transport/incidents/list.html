@@ -1,0 +1,75 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Incidentes{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i> Lista de Incidentes
+    </h5>
+    <a href="{% url 'transport:incident_create' %}" class="btn btn-light text-primary fw-semibold">
+      <i class="bi bi-plus-circle"></i> Nuevo
+    </a>
+  </div>
+
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0 align-middle text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Viaje</th>
+          <th>Tipo</th>
+          <th>Severidad</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in incidents %}
+          <tr>
+            <td>
+              <span class="fw-semibold text-primary">
+                <i class="bi bi-truck me-1"></i>{{ i.trip.code }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-info text-dark">{{ i.get_type_display }}</span>
+            </td>
+            <td>
+              {% with i.get_severity_display as level %}
+                {% if level == 'Alta' %}
+                  <span class="badge bg-danger">Alta</span>
+                {% elif level == 'Media' %}
+                  <span class="badge bg-warning text-dark">Media</span>
+                {% elif level == 'Baja' %}
+                  <span class="badge bg-success">Baja</span>
+                {% else %}
+                  <span class="badge bg-secondary">Desconocida</span>
+                {% endif %}
+              {% endwith %}
+            </td>
+            <td>
+              <span class="text-muted">
+                <i class="bi bi-calendar-event me-1"></i>{{ i.occurred_at|date:"d-m-Y H:i" }}
+              </span>
+            </td>
+            <td class="text-center">
+              <a href="{% url 'transport:incident_update' i.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <a href="{% url 'transport:incident_delete' i.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              <i class="bi bi-info-circle me-2"></i>No hay incidentes registrados.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

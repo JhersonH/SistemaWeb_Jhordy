@@ -1,0 +1,124 @@
+{% extends 'base/base_dashboard.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title|default:"Usuario" }}{% endblock %}
+
+{% block inner_content %}
+<div class="container-fluid px-0">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">{{ title|default:"Usuario" }}</h3>
+    <div>
+      <a href="{% url 'users:list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="card">
+    <div class="card-body">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <!-- Columna izquierda -->
+        <div class="col-md-6">
+          <div class="mb-2">
+            <label class="form-label">Usuario</label>
+            {{ user_form.username|add_class:"form-control" }}
+            {{ user_form.username.errors }}
+          </div>
+
+          <div class="row g-2">
+            <div class="col">
+              <label class="form-label">Nombre</label>
+              {{ user_form.first_name|add_class:"form-control" }}
+              {{ user_form.first_name.errors }}
+            </div>
+            <div class="col">
+              <label class="form-label">Apellido</label>
+              {{ user_form.last_name|add_class:"form-control" }}
+              {{ user_form.last_name.errors }}
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Email</label>
+            {{ user_form.email|add_class:"form-control" }}
+            {{ user_form.email.errors }}
+          </div>
+
+          <div class="form-check form-switch mt-2">
+            {{ user_form.is_active|add_class:"form-check-input" }}
+            <label class="form-check-label">Activo</label>
+          </div>
+
+          {% if is_create %}
+            <div class="row g-2 mt-2">
+              <div class="col">
+                <label class="form-label">Contraseña</label>
+                {{ user_form.password1|add_class:"form-control" }}
+                {{ user_form.password1.errors }}
+              </div>
+              <div class="col">
+                <label class="form-label">Confirmación</label>
+                {{ user_form.password2|add_class:"form-control" }}
+                {{ user_form.password2.errors }}
+              </div>
+            </div>
+          {% else %}
+            <p class="text-muted small mt-2">
+              Para cambiar contraseña usa el botón <em>Reset password</em> en la lista.
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- Columna derecha: Perfil -->
+        <div class="col-md-6">
+          <div class="mb-2">
+            <label class="form-label">Rol</label>
+            {{ profile_form.role|add_class:"form-select" }}
+            {{ profile_form.role.errors }}
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">DNI/RUC</label>
+              {{ profile_form.doc_id|add_class:"form-control" }}
+              {{ profile_form.doc_id.errors }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Teléfono</label>
+              {{ profile_form.phone|add_class:"form-control" }}
+              {{ profile_form.phone.errors }}
+            </div>
+          </div>
+
+          <div class="mt-2">
+            <label class="form-label">Avatar</label>
+            {{ profile_form.avatar|add_class:"form-control" }}
+            {{ profile_form.avatar.errors }}
+            {% if instance and instance.profile.avatar %}
+              <div class="mt-2">
+                <img src="{{ instance.profile.avatar.url }}" alt="Avatar" class="rounded" style="height:64px;">
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer d-flex justify-content-end gap-2">
+      <a href="{% url 'users:list' %}" class="btn btn-light">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

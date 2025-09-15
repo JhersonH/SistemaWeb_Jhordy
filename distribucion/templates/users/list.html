@@ -1,0 +1,92 @@
+{% extends 'base/base_dashboard.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block inner_content %}
+<div class="container-fluid px-0">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">Usuarios</h3>
+    <a class="btn btn-primary" href="{% url 'users:create' %}">
+      <i class="bi bi-plus-lg me-1"></i> Nuevo usuario
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <form class="row g-2 mb-3" id="filterForm">
+    <div class="col-sm-6 col-md-4">
+      <input type="search" name="q" id="searchInput" value="{{ request.GET.q }}" class="form-control"
+             placeholder="Buscar por nombre, usuario o email…">
+    </div>
+    <div class="col-sm-4 col-md-3">
+        <select name="role" class="form-select" id="roleSelect">
+          <option value="">-- Rol --</option>
+            {% for r in roles %}
+              <option value="{{ r.id }}">{{ r.get_role_type_display }}</option>
+            {% endfor %}
+        </select>
+    </div>
+  </form>
+
+  <!-- Mensajes -->
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Tabla -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <table class="table table-striped mb-0 align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody">
+          {% include "users/_user_table.html" %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Script para filtrado dinámico sin recargar -->
+<script>
+  const inputQ = document.getElementById("searchInput");
+  const selectRole = document.getElementById("roleSelect");
+
+  function fetchFilteredUsers() {
+    const q = inputQ.value;
+    const role = selectRole.value;
+    const params = new URLSearchParams({ q, role });
+
+    fetch(`?${params}`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById("userTableBody").innerHTML = data.html;
+    });
+  }
+
+  let debounce;
+  inputQ.addEventListener("input", () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(fetchFilteredUsers, 400);
+  });
+
+  selectRole.addEventListener("change", fetchFilteredUsers);
+</script>
+{% endblock %}

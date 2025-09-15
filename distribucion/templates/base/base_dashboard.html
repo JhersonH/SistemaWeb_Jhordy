@@ -1,0 +1,128 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Principal | Sistema Escolar" %}{% endblock %}
+
+{% block content %}
+<div id="dashboardContainer" class="flex h-screen overflow-hidden bg-gray-100">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="w-64 bg-white shadow-md transition-all flex flex-col justify-between z-40">
+    <div>
+      <div class="text-center mt-4">
+        <img src="{% static 'img/logo.png' %}" class="mx-auto w-20 mb-2" alt="Logo Distribuidora">
+        <h5 class="text-blue-700 font-bold text-sm">Distribuidora KERIM S.A.C</h5>
+      </div>
+
+      {% with user_role=user.profile.role.role_type %}
+      <ul class="mt-6 space-y-4 px-6" x-data="{ openTransport: {% if 'transport' in request.path %}true{% else %}false{% endif %} }">
+
+        <!-- Inicio -->
+        <li>
+          <a href="{% url 'dashboard' %}" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium
+                     {% if request.path == '/dashboard/' %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
+            <i class="bi bi-house-door"></i><span class="text-base">Inicio</span>
+          </a>
+        </li>
+
+        <!-- Usuarios solo para superusuarios -->
+        {% if user.is_superuser %}
+        <li>
+          <a href="{% url 'users:list' %}" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium
+                     {% if '/users/' in request.path %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
+            <i class="bi bi-people"></i><span class="text-base">Usuarios</span>
+          </a>
+        </li>
+        {% endif %}
+
+        <!-- Transporte: mostrar solo si el rol tiene acceso a al menos un submódulo -->
+        {% if user_role in "ops_manager warehouse_manager dispatcher" %}
+        <li>
+          <button @click="openTransport = !openTransport"
+                type="button"
+                class="w-full flex items-center justify-between p-2 rounded-lg shadow transition font-medium
+                       {% if 'transport' in request.path %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
+            <span class="flex items-center space-x-2">
+              <i class="bi bi-truck"></i><span class="text-base">Transporte</span>
+            </span>
+            <i class="bi" :class="openTransport ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+          </button>
+
+          <ul x-show="openTransport" x-transition class="pl-6 mt-2 space-y-2 origin-top">
+            {% if user_role in "ops_manager warehouse_manager" %}
+              <li><a href="{% url 'transport:vehicle_list' %}" class="block px-2 py-1 rounded transition {% if 'vehicle' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Vehículos</a></li>
+              <li><a href="{% url 'transport:driver_list' %}" class="block px-2 py-1 rounded transition {% if 'driver' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Conductores</a></li>
+            {% endif %}
+
+            {% if user_role in "ops_manager dispatcher" %}
+              <li><a href="{% url 'transport:route_list' %}" class="block px-2 py-1 rounded transition {% if 'route' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Rutas</a></li>
+              <li><a href="{% url 'transport:trip_list' %}" class="block px-2 py-1 rounded transition {% if 'trip' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Viajes</a></li>
+              <li><a href="{% url 'transport:stop_list_all' %}" class="block px-2 py-1 rounded transition {% if 'stop' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Paradas</a></li>
+              <li><a href="{% url 'transport:incident_list' %}" class="block px-2 py-1 rounded transition {% if 'incident' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Incidentes</a></li>
+            {% endif %}
+
+            {% if user_role == "ops_manager" %}
+              <li><a href="{% url 'transport:expense_list' %}" class="block px-2 py-1 rounded transition {% if 'expense' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Gastos</a></li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- Inventario -->
+        <li>
+          <a href="#" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium text-gray-700 hover:bg-black hover:text-white">
+            <i class="bi bi-box-seam"></i><span class="text-base">Inventario</span>
+          </a>
+        </li>
+
+        <!-- Reportes -->
+        <li>
+          <a href="#" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium text-gray-700 hover:bg-black hover:text-white">
+            <i class="bi bi-clipboard-data"></i><span class="text-base">Reportes</span>
+          </a>
+        </li>
+
+        <!-- Perfil -->
+        <li>
+          <a href="#" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium text-gray-700 hover:bg-black hover:text-white">
+            <i class="bi bi-person-badge"></i><span class="text-base">Perfil</span>
+          </a>
+        </li>
+
+        <!-- Configuración -->
+        <li>
+          <a href="#" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium text-gray-700 hover:bg-black hover:text-white">
+            <i class="bi bi-gear-fill"></i><span class="text-base">Configuración</span>
+          </a>
+        </li>
+      </ul>
+      {% endwith %}
+    </div>
+
+    <!-- Botón de salida -->
+    <form method="post" action="{% url 'logout' %}" class="p-6">
+      {% csrf_token %}
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
+        <i class="bi bi-box-arrow-left me-2"></i>Salir
+      </button>
+    </form>
+  </aside>
+
+  <!-- Contenido principal -->
+  <div class="flex-1 flex flex-col">
+    <!-- Navbar superior -->
+    <header class="bg-white border-b shadow px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <button id="toggleSidebar" class="text-gray-700 text-2xl focus:outline-none transition hover:scale-105">☰</button>
+        <span class="text-sm text-gray-800 font-medium">Bienvenido, {{ user.first_name }} {{ user.last_name }}</span>
+      </div>
+    </header>
+
+    <!-- Contenido interno -->
+    <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+      {% block inner_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

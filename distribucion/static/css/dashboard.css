@@ -1,0 +1,139 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto; /* ✅ Permite scroll si se necesita */
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;     /* ✅ No usar height fija */
+  width: 100%;
+  overflow: visible;     /* ✅ Dejar que crezca */
+}
+
+.dashboard-container.collapsed .sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  transform: translateX(-100%);
+  z-index: 999;
+}
+
+.dashboard-container.collapsed .main-content {
+  padding-left: 0;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #2c2f33;
+  flex-shrink: 0;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 15px;
+  transition: transform 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  position: fixed;
+  z-index: 1000;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sidebar-logo img {
+  width: 70px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.sidebar-logo h5 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 15px;
+}
+
+.sidebar-menu li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  display: block;
+  padding: 8px 10px;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.sidebar-menu li a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  padding-left: 250px;
+  overflow: visible;      /* ✅ Esto también ayuda a evitar cortes de contenido */
+  background-color: #ffffff;
+  transition: none;       /* ✅ Elimina animaciones innecesarias */
+}
+
+.dashboard-container.collapsed .main-content {
+  padding-left: 20px; /* ✅ espacio cuando sidebar está oculto */
+}
+
+.dashboard-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2c2f33;
+  color: white;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  margin-left: 20px;
+}
+
+.user-label {
+  font-weight: 500;
+}
+
+.logout-form {
+  margin: 0;
+}
+
+.toggle-sidebar-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 15px;
+}
+
+.dashboard-body {
+  padding: 10px 10px;
+}

@@ -1,0 +1,217 @@
+{% extends 'base/base_dashboard.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Panel Principal | Sistema Distribuidor" %}{% endblock %}
+
+{% block inner_content %}
+<div class="p-6 space-y-6">
+  <!-- Distribución en 2 columnas -->
+  <div class="flex flex-col xl:grid xl:grid-cols-3 gap-6">
+
+    <!-- Donut sola (1 columna) -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow h-full xl:col-span-1">
+      <div class="flex flex-col items-center justify-center text-center mb-4">
+        <div class="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3a1 1 0 011 1v8h8a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1h7z" />
+          </svg>
+          <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Almacén por Área" %}</h2>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          {% trans "Distribución por almacén" %}
+        </p>
+      </div>
+      <canvas id="coursesByLevelChart" class="w-full h-72"></canvas>
+    </div>
+
+    <!-- Gráficos agrupados (2 columnas) -->
+    <div class="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Documentos por Tipo -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
+        <div class="flex flex-col items-center justify-center text-center mb-4">
+          <div class="flex items-center justify-center gap-2 text-purple-600 dark:text-purple-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m2 6H7a2 2 0 01-2-2V6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v10a2 2 0 01-2 2z" />
+            </svg>
+            <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Productos por Categoría" %}</h2>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {% trans "Cantidad de productos por categoría" %}
+          </p>
+        </div>
+        <canvas id="documentsByTypeChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+      </div>
+
+      <!-- Clases por Día -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
+        <div class="flex flex-col items-center justify-center text-center mb-4">
+          <div class="flex items-center justify-center gap-2 text-orange-500 dark:text-orange-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"/>
+            </svg>
+            <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Número de Envíos" %}</h2>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {% trans "Cantidad de envíos en la semana" %}
+          </p>
+        </div>
+        <canvas id="weeklyScheduleChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+      </div>
+
+      <!-- Horas por Día -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
+        <div class="flex flex-col items-center justify-center text-center mb-4">
+          <div class="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 6v6l4 2M12 4a8 8 0 100 16 8 8 0 000-16z" />
+            </svg>
+            <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Transportes" %}</h2>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {% trans "Cantidad de Transportes" %}
+          </p>
+        </div>
+        <canvas id="hoursPerDayChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+      </div>
+
+      <!-- Espacio futuro para otro gráfico (o déjalo vacío por ahora) -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow flex items-center justify-center text-gray-400 dark:text-gray-500">
+        <span>{% trans "Próximamente más métricas..." %}</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  let initialWidth = window.innerWidth;
+  window.addEventListener('resize', () => {
+    const newWidth = window.innerWidth;
+    const threshold = 768; // límite entre móvil y desktop
+
+    const crossedThreshold =
+      (initialWidth < threshold && newWidth >= threshold) ||
+      (initialWidth >= threshold && newWidth < threshold);
+
+    if (crossedThreshold) {
+      location.reload();
+    }
+  });
+</script>
+
+<script>
+  const coursesByLevelCtx = document.getElementById('coursesByLevelChart').getContext('2d');
+  const documentsByTypeCtx = document.getElementById('documentsByTypeChart').getContext('2d');
+  const weeklyScheduleCtx = document.getElementById('weeklyScheduleChart').getContext('2d');
+
+  new Chart(coursesByLevelCtx, {
+    type: 'doughnut',
+    data: {
+      labels: {{ courses_levels_labels|safe }},
+      datasets: [{
+        data: {{ courses_levels_data|safe }},
+        backgroundColor: ['#3b82f6', '#10b981'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+
+  new Chart(documentsByTypeCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ documents_types_labels|safe }},
+      datasets: [{
+        label: 'Cantidad',
+        data: {{ documents_types_data|safe }},
+        backgroundColor: [
+          '#6366f1',  // Evaluación - Indigo
+          '#ec4899',  // Material - Rosado fuerte
+          '#14b8a6'   // Reporte - Cian oscuro
+        ],
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      },
+      plugins: {
+        legend: { position: 'top' }
+      }
+    }
+  });
+
+  new Chart(weeklyScheduleCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ schedules_labels|safe }},
+      datasets: [{
+        label: 'Clases',
+        data: {{ schedules_data|safe }},
+        backgroundColor: [
+          '#f97316',  // lunes - azul
+          '#22c55e',  // martes - verde
+          '#3b82f6',  // miércoles - naranja
+          '#8b5cf6',  // jueves - púrpura
+          '#ef4444'   // viernes - rojo
+        ],
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // Horas totales por día
+  new Chart(document.getElementById('hoursPerDayChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: {{ schedules_labels|safe }},
+      datasets: [{
+        label: 'Horas Totales',
+        data: {{ hours_per_day_data|safe }},
+        borderColor: '#22c55e',
+        backgroundColor: '#bbf7d0',
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#16a34a'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const totalMin = context.raw;
+              const h = Math.floor(totalMin / 60);
+              const m = totalMin % 60;
+              return `${h}h ${m}m`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Horas' }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

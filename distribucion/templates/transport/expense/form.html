@@ -1,0 +1,62 @@
+{% extends 'base/base_dashboard.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">
+      <i class="bi bi-cash-stack me-2"></i>{{ title }}
+    </h5>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="card shadow-sm">
+    {% csrf_token %}
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.trip.id_for_label }}">Viaje</label>
+          {{ form.trip|add_class:"form-select" }}
+          {% if form.trip.errors %}
+            <div class="text-danger small">{{ form.trip.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.type.id_for_label }}">Tipo de gasto</label>
+          {{ form.type|add_class:"form-select" }}
+          {% if form.type.errors %}
+            <div class="text-danger small">{{ form.type.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.amount.id_for_label }}">Monto</label>
+          {{ form.amount|add_class:"form-control" }}
+          {% if form.amount.errors %}
+            <div class="text-danger small">{{ form.amount.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.receipt.id_for_label }}">Comprobante (opcional)</label>
+          {{ form.receipt|add_class:"form-control" }}
+          {% if form.receipt.errors %}
+            <div class="text-danger small">{{ form.receipt.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer text-end">
+      <a href="{% url 'transport:expense_list' %}" class="btn btn-light me-2">
+        <i class="bi bi-x-circle"></i> Cancelar
+      </a>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-circle"></i> Guardar
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

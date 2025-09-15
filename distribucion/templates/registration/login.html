@@ -1,0 +1,105 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Sesión | Micaela Bastidas{% endblock %}
+
+{% block content %}
+{% if messages %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      {% for message in messages %}
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: '{{ message }}',
+          confirmButtonColor: '#002b5c'
+        });
+      {% endfor %}
+    });
+  </script>
+{% endif %}
+
+<div class="container-fluid d-flex justify-content-center align-items-center min-vh-100">
+  <div class="card shadow-lg border-0 d-flex flex-lg-row flex-column align-items-center animate__animated animate__fadeInUp"
+       style="max-width: 1100px; width: 95%; border-radius: 1rem; overflow: hidden;">
+
+    <!-- Logo institucional -->
+    <div class="text-center p-5 bg-white w-100 w-lg-50 d-flex flex-column justify-content-center align-items-center">
+      <img src="{% static 'img/logo.png' %}" alt="Distribuidora" class="img-fluid mb-4" style="max-height: 260px;">
+      <h4 class="fw-bold text-primary fs-3 mb-0">KERIM S.A.C</h4>
+      <p class="text-muted mt-2 fs-6">Perú - {% now "Y" %}</p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="p-5 w-100 w-lg-50" style="background-color: #002b5c; color: white;">
+      <div class="text-center mb-4">
+        <h3 class="fw-bold text-warning"><i class="bi bi-box-arrow-in-right me-2"></i>Ingreso al Sistema</h3>
+        <p class="text-light fs-6">Usa tu usuario corporativo para ingresar</p>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-danger alert-dismissible fade show fs-6" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> {{ message }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label for="id_username" class="form-label text-light fs-5">Usuario</label>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-white"><i class="bi bi-person-fill text-primary fs-5"></i></span>
+            <input type="text" name="username" class="form-control fs-5" id="id_username" placeholder="Ingrese su usuario" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="id_password" class="form-label text-light fs-5">Contraseña</label>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-white"><i class="bi bi-lock-fill text-primary fs-5"></i></span>
+            <input type="password" name="password" class="form-control fs-5" id="id_password" placeholder="Ingrese su contraseña" required>
+            <span class="input-group-text bg-white" id="togglePassword" style="cursor: pointer;">
+              <i class="bi bi-eye-fill text-secondary"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-warning text-dark fw-bold shadow-sm fs-5 py-2">
+            <i class="bi bi-check-circle me-1"></i> Ingresar
+          </button>
+        </div>
+      </form>
+
+      <div class="text-center mt-4 text-light fs-6">
+        © {% now "Y" %} KERIM S.A.C - Perú
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/login.js' %}"></script>
+
+<script>
+  // Mostrar u ocultar contraseña
+  document.addEventListener('DOMContentLoaded', function () {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('id_password');
+
+    togglePassword.addEventListener('click', function () {
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      this.innerHTML = type === 'password'
+        ? '<i class="bi bi-eye-fill text-secondary"></i>'
+        : '<i class="bi bi-eye-slash-fill text-primary"></i>';
+    });
+  });
+</script>
+{% endblock %}
