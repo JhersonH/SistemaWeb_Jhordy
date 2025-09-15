@@ -6,34 +6,45 @@
 
 {% block inner_content %}
 <div class="container-fluid px-0">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h3 class="mb-0">Usuarios</h3>
-    <a class="btn btn-primary" href="{% url 'users:create' %}">
-      <i class="bi bi-plus-lg me-1"></i> Nuevo usuario
+
+  <!-- Título y botón -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="text-primary fw-bold mb-0">
+      <i class="bi bi-people-fill me-2"></i>Gestión de Usuarios
+    </h3>
+    <a href="{% url 'users:create' %}" class="btn btn-outline-primary rounded-pill shadow-sm">
+      <i class="bi bi-plus-circle me-1"></i> Nuevo Usuario
     </a>
   </div>
 
   <!-- Filtros -->
-  <form class="row g-2 mb-3" id="filterForm">
-    <div class="col-sm-6 col-md-4">
-      <input type="search" name="q" id="searchInput" value="{{ request.GET.q }}" class="form-control"
-             placeholder="Buscar por nombre, usuario o email…">
-    </div>
-    <div class="col-sm-4 col-md-3">
-        <select name="role" class="form-select" id="roleSelect">
-          <option value="">-- Rol --</option>
+  <div class="card shadow-sm mb-4 border-0">
+    <div class="card-body">
+      <form class="row g-3" id="filterForm">
+        <div class="col-md-6 col-lg-4">
+          <input type="search" name="q" id="searchInput" value="{{ request.GET.q }}" class="form-control form-control-sm rounded-pill"
+                 placeholder="Buscar por nombre, usuario o correo…">
+        </div>
+        <div class="col-md-4 col-lg-3">
+          <select name="role" class="form-select form-select-sm rounded-pill" id="roleSelect">
+            <option value="">— Filtrar por rol —</option>
             {% for r in roles %}
               <option value="{{ r.id }}">{{ r.get_role_type_display }}</option>
             {% endfor %}
-        </select>
+          </select>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 
   <!-- Mensajes -->
   {% if messages %}
     <div class="mb-3">
       {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
       {% endfor %}
     </div>
   {% endif %}
@@ -41,26 +52,28 @@
   <!-- Tabla -->
   <div class="card shadow-sm border-0">
     <div class="card-body p-0">
-      <table class="table table-striped mb-0 align-middle text-center">
-        <thead class="table-light">
-          <tr>
-            <th>Usuario</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="userTableBody">
-          {% include "users/_user_table.html" %}
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-striped mb-0 align-middle text-center">
+          <thead class="table-light text-center">
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre completo</th>
+              <th>Email</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            {% include "users/_user_table.html" %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Script para filtrado dinámico sin recargar -->
+<!-- Script: Filtro dinámico -->
 <script>
   const inputQ = document.getElementById("searchInput");
   const selectRole = document.getElementById("roleSelect");
@@ -71,9 +84,7 @@
     const params = new URLSearchParams({ q, role });
 
     fetch(`?${params}`, {
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => response.json())
     .then(data => {

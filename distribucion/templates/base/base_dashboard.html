@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Principal | Sistema Escolar" %}{% endblock %}
+{% block title %}{% trans "Distribuidora KERIM S.A.C" %}{% endblock %}
 
 {% block content %}
 <div id="dashboardContainer" class="flex h-screen overflow-hidden bg-gray-100">
@@ -36,8 +36,8 @@
         </li>
         {% endif %}
 
-        <!-- Transporte: mostrar solo si el rol tiene acceso a al menos un submódulo -->
-        {% if user_role in "ops_manager warehouse_manager dispatcher" %}
+        <!-- Transporte: mostrar si el usuario tiene acceso a cualquier submódulo -->
+        {% if user.is_superuser or user_role == "ops_manager" or user_role == "warehouse_manager" or user_role == "warehouse_staff" or user_role == "inventory_controller" or user_role == "dispatcher" or user_role == "driver" or user_role == "viewer" %}
         <li>
           <button @click="openTransport = !openTransport"
                 type="button"
@@ -50,19 +50,19 @@
           </button>
 
           <ul x-show="openTransport" x-transition class="pl-6 mt-2 space-y-2 origin-top">
-            {% if user_role in "ops_manager warehouse_manager" %}
+            {% if user.is_superuser or user_role == "ops_manager" or user_role == "warehouse_manager" %}
               <li><a href="{% url 'transport:vehicle_list' %}" class="block px-2 py-1 rounded transition {% if 'vehicle' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Vehículos</a></li>
               <li><a href="{% url 'transport:driver_list' %}" class="block px-2 py-1 rounded transition {% if 'driver' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Conductores</a></li>
             {% endif %}
 
-            {% if user_role in "ops_manager dispatcher" %}
+            {% if user.is_superuser or user_role == "ops_manager" or user_role == "dispatcher" %}
               <li><a href="{% url 'transport:route_list' %}" class="block px-2 py-1 rounded transition {% if 'route' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Rutas</a></li>
               <li><a href="{% url 'transport:trip_list' %}" class="block px-2 py-1 rounded transition {% if 'trip' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Viajes</a></li>
               <li><a href="{% url 'transport:stop_list_all' %}" class="block px-2 py-1 rounded transition {% if 'stop' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Paradas</a></li>
               <li><a href="{% url 'transport:incident_list' %}" class="block px-2 py-1 rounded transition {% if 'incident' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Incidentes</a></li>
             {% endif %}
 
-            {% if user_role == "ops_manager" %}
+            {% if user.is_superuser or user_role == "ops_manager" %}
               <li><a href="{% url 'transport:expense_list' %}" class="block px-2 py-1 rounded transition {% if 'expense' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Gastos</a></li>
             {% endif %}
           </ul>
