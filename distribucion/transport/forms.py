@@ -1,5 +1,7 @@
 from django import forms
 from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident
+from django.forms import inlineformset_factory
+from .models import TripProduct
 
 class VehicleForm(forms.ModelForm):
     class Meta:
@@ -94,6 +96,19 @@ class TripForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date'].input_formats = ['%d-%m-%Y']
+
+class TripProductForm(forms.ModelForm):
+    class Meta:
+        model = TripProduct
+        fields = ["product", "quantity"]
+
+TripProductFormSet = inlineformset_factory(
+    Trip,
+    TripProduct,
+    form=TripProductForm,
+    extra=1,
+    can_delete=True
+)
 
 class StopForm(forms.ModelForm):
     class Meta:

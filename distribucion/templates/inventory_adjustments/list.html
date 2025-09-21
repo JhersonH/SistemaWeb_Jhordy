@@ -1,0 +1,93 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Ajustes de Inventario{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="bi bi-sliders2-vertical me-2"></i> Ajustes de Inventario
+    </h5>
+    <a href="{% url 'inventory_adjustments:adjustment_create' %}" class="btn btn-light text-primary fw-semibold">
+      <i class="bi bi-plus-circle"></i> Nuevo Ajuste
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="px-3 pt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <table class="table table-striped table-hover mb-0 align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>Producto</th>
+            <th>Ubicación</th>
+            <th>Cantidad</th>
+            <th>Tipo</th>
+            <th>Motivo</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for adj in adjustments %}
+          <tr>
+            <td class="fw-bold">
+              <i class="bi bi-box me-1 text-primary"></i>
+              {{ adj.product.name }}
+            </td>
+            <td>
+              <i class="bi bi-geo-alt me-1 text-secondary"></i>
+              {{ adj.location.name }}
+            </td>
+            <td>{{ adj.quantity }}</td>
+            <td>
+              {% if adj.adjustment_type == 'increase' %}
+                <span class="badge bg-success">Ingreso</span>
+              {% else %}
+                <span class="badge bg-danger">Salida</span>
+              {% endif %}
+            </td>
+            <td>{{ adj.reason|default:"—" }}</td>
+            <td>
+              <span class="badge bg-light text-muted">
+                {{ adj.created_at|date:"d/m/Y H:i" }}
+              </span>
+            </td>
+            <td>
+              <!-- <a href="{% url 'inventory_adjustments:adjustment_update' adj.id %}" class="btn btn-sm btn-outline-warning me-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a> -->
+              <a href="{% url 'inventory_adjustments:adjustment_delete' adj.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="bi bi-info-circle me-2"></i>No hay ajustes registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.add('fade', 'show');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+
+{% endblock %}

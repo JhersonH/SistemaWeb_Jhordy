@@ -12,6 +12,14 @@
     </a>
   </div>
 
+  {% if messages %}
+    <div class="px-3 pt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <div class="card-body p-0">
     <table class="table table-striped mb-0 align-middle text-center">
       <thead class="table-light">
@@ -64,4 +72,14 @@
     </table>
   </div>
 </div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.add('fade', 'show');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+
 {% endblock %}

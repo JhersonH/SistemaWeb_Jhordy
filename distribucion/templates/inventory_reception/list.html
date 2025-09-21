@@ -1,0 +1,87 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Recepción de Productos{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="bi bi-truck me-2"></i> Recepción de Productos
+    </h5>
+    <a href="{% url 'inventory_receiving:reception_create' %}" class="btn btn-light text-primary fw-semibold">
+      <i class="bi bi-plus-circle"></i> Nueva Recepción
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="px-3 pt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      {% if receptions %}
+      <table class="table table-striped align-middle text-center mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Fecha</th>
+            <th>Recibido por</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reception in receptions %}
+          <tr>
+            <td class="fw-bold">
+              <i class="bi bi-box me-1 text-primary"></i>
+              {{ reception.product.name }}
+            </td>
+            <td>{{ reception.quantity_received }}</td>
+            <td>
+              <span class="badge bg-light text-muted">
+                {{ reception.reception_date|date:"d/m/Y" }}
+              </span>
+            </td>
+            <td>
+              <i class="bi bi-person-circle me-1 text-secondary"></i>
+              {% if reception.receiver %}
+                {{ reception.receiver.get_full_name|default:reception.receiver.username }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'inventory_receiving:reception_update' reception.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <a href="{% url 'inventory_receiving:reception_delete' reception.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="p-4 text-center text-muted">
+        <i class="bi bi-info-circle me-2"></i>No hay registros de recepción por ahora.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.add('fade', 'show');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Stock por Ubicación{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-archive me-2"></i> Stock por Ubicación</h5>
+    <a href="{% url 'inventory_stock:stock_create' %}" class="btn btn-light text-primary fw-semibold">
+      <i class="bi bi-plus-circle"></i> Agregar Stock
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="px-3 pt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <table class="table table-striped mb-0 align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Producto</th>
+            <th scope="col">Ubicación</th>
+            <th scope="col">Cantidad</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for stock in stocks %}
+          <tr>
+            <td class="fw-bold">
+              <i class="bi bi-box me-1 text-primary"></i>
+              {{ stock.product.name }}
+            </td>
+            <td>
+              <i class="bi bi-geo-alt me-1 text-secondary"></i>
+              {{ stock.location.name }}
+            </td>
+            <td>{{ stock.quantity }}</td>
+            <td>
+              <a href="{% url 'inventory_stock:stock_update' stock.id %}" class="btn btn-sm btn-outline-warning me-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <a href="{% url 'inventory_stock:stock_delete' stock.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted py-4">
+              <i class="bi bi-info-circle me-2"></i>No hay registros de stock.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.add('fade', 'show');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+
+{% endblock %}

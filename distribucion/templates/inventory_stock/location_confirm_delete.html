@@ -1,0 +1,33 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Eliminar Ubicación{% endblock %}
+
+{% block inner_content %}
+<form id="deleteForm" method="post">
+  {% csrf_token %}
+</form>
+
+<!-- SweetAlert2 desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Estás a punto de eliminar la ubicación: {{ object.name }}",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById("deleteForm").submit();
+      } else {
+        // Si cancela, lo llevamos de regreso a la lista de ubicaciones
+        window.location.href = "{% url 'inventory_stock:location_list' %}";
+      }
+    });
+  });
+</script>
+{% endblock %}

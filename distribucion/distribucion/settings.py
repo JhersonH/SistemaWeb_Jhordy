@@ -44,6 +44,15 @@ INSTALLED_APPS = [
     "transport.apps.TransportConfig",
 
     'widget_tweaks',
+    'inventory_product',
+    'product_categories',
+    'inventory_movements',
+    'inventory_stock',
+    'inventory_alerts',
+    'inventory_kardex',
+    'inventory_adjustments',
+    'inventory_receiving',
+
 ]
 
 MIDDLEWARE = [
@@ -54,6 +63,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'core.middleware.thread_local.ThreadLocalMiddleware',
 ]
 
 ROOT_URLCONF = 'distribucion.urls'

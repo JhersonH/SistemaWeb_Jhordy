@@ -16,8 +16,23 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path("users/", include("users.urls", namespace="users")),
     path('transport/', include('transport.urls')),
+
+    # Inventario
+    path('productos/', include('inventory_product.urls')),
+    path('categorias-productos/', include('product_categories.urls')),
+    path('movimientos-inventario/', include('inventory_movements.urls')),
+    path('stock-ubicacion/', include('inventory_stock.urls')),
+    path('alertas-stock/', include('inventory_alerts.urls')),
+    path('kardex/', include('inventory_kardex.urls')),
+    path('ajustes-inventario/', include('inventory_adjustments.urls')),
+    path('recepcion-productos/', include('inventory_receiving.urls')),
+
+    # Auth
     path("accounts/login/", CustomLoginView.as_view(), name="login"),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # Favicon
     re_path(r'^favicon\\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
 ]
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

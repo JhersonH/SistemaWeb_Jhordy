@@ -1,0 +1,14 @@
+# Ignorar la base de datos SQLite
+db.sqlite3
+
+# Archivos de migración compilados
+*.pyc
+__pycache__/
+*/migrations/__pycache__/
+
+# Archivos de entorno virtual
+venv/
+env/
+
+# Archivos de configuración locales
+.env

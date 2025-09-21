@@ -1,0 +1,33 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Eliminar Categoría{% endblock %}
+
+{% block inner_content %}
+<form id="deleteForm" method="post">
+  {% csrf_token %}
+</form>
+
+<!-- Cargar SweetAlert2 desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Estás a punto de eliminar la categoría: {{ category.name }}",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById("deleteForm").submit();
+      } else {
+        // Redirigir a la lista de categorías si cancela
+        window.location.href = "{% url 'product_categories:category_list' %}";
+      }
+    });
+  });
+</script>
+{% endblock %}

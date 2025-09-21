@@ -15,34 +15,37 @@
         <h5 class="text-blue-700 font-bold text-sm">Distribuidora KERIM S.A.C</h5>
       </div>
 
-      {% with user_role=user.profile.role.role_type %}
-      <ul class="mt-6 space-y-4 px-6" x-data="{ openTransport: {% if 'transport' in request.path %}true{% else %}false{% endif %} }">
+      {% with user_role=user.profile.role.role_type ns=request.resolver_match.namespace url_name=request.resolver_match.url_name path=request.path %}
+      <ul class="mt-6 space-y-4 px-6"
+          x-data="{ openTransport: {% if 'transport' in path %}true{% else %}false{% endif %} }">
 
         <!-- Inicio -->
         <li>
-          <a href="{% url 'dashboard' %}" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium
-                     {% if request.path == '/dashboard/' %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
+          <a href="{% url 'dashboard' %}"
+             class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium
+                    {% if request.path == '/dashboard/' %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
             <i class="bi bi-house-door"></i><span class="text-base">Inicio</span>
           </a>
         </li>
 
-        <!-- Usuarios solo para superusuarios -->
+        <!-- Usuarios (solo superusuario) -->
         {% if user.is_superuser %}
         <li>
-          <a href="{% url 'users:list' %}" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium
-                     {% if '/users/' in request.path %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
+          <a href="{% url 'users:list' %}"
+             class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium
+                    {% if ns == 'users' %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
             <i class="bi bi-people"></i><span class="text-base">Usuarios</span>
           </a>
         </li>
         {% endif %}
 
-        <!-- Transporte: mostrar si el usuario tiene acceso a cualquier submódulo -->
-        {% if user.is_superuser or user_role == "ops_manager" or user_role == "warehouse_manager" or user_role == "warehouse_staff" or user_role == "inventory_controller" or user_role == "dispatcher" or user_role == "driver" or user_role == "viewer" %}
+        <!-- Transporte -->
+        {% if user.is_superuser or user_role in 'ops_manager warehouse_manager dispatcher driver viewer' %}
         <li>
           <button @click="openTransport = !openTransport"
-                type="button"
-                class="w-full flex items-center justify-between p-2 rounded-lg shadow transition font-medium
-                       {% if 'transport' in request.path %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
+                  type="button"
+                  class="w-full flex items-center justify-between p-2 rounded-lg shadow transition font-medium
+                         {% if 'transport' in path %}bg-black text-white{% else %}text-gray-700 hover:bg-black hover:text-white{% endif %}">
             <span class="flex items-center space-x-2">
               <i class="bi bi-truck"></i><span class="text-base">Transporte</span>
             </span>
@@ -50,31 +53,138 @@
           </button>
 
           <ul x-show="openTransport" x-transition class="pl-6 mt-2 space-y-2 origin-top">
-            {% if user.is_superuser or user_role == "ops_manager" or user_role == "warehouse_manager" %}
-              <li><a href="{% url 'transport:vehicle_list' %}" class="block px-2 py-1 rounded transition {% if 'vehicle' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Vehículos</a></li>
-              <li><a href="{% url 'transport:driver_list' %}" class="block px-2 py-1 rounded transition {% if 'driver' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Conductores</a></li>
+
+            {% if user.is_superuser or user_role in 'ops_manager warehouse_manager viewer' %}
+              <li><a href="{% url 'transport:vehicle_list' %}"
+                     class="block px-2 py-1 rounded transition {% if 'vehicle' in path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">
+                Vehículos</a></li>
+              <li><a href="{% url 'transport:driver_list' %}"
+                     class="block px-2 py-1 rounded transition {% if 'driver' in path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">
+                Conductores</a></li>
             {% endif %}
 
-            {% if user.is_superuser or user_role == "ops_manager" or user_role == "dispatcher" %}
-              <li><a href="{% url 'transport:route_list' %}" class="block px-2 py-1 rounded transition {% if 'route' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Rutas</a></li>
-              <li><a href="{% url 'transport:trip_list' %}" class="block px-2 py-1 rounded transition {% if 'trip' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Viajes</a></li>
-              <li><a href="{% url 'transport:stop_list_all' %}" class="block px-2 py-1 rounded transition {% if 'stop' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Paradas</a></li>
-              <li><a href="{% url 'transport:incident_list' %}" class="block px-2 py-1 rounded transition {% if 'incident' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Incidentes</a></li>
+            {% if user.is_superuser or user_role in 'ops_manager dispatcher driver viewer' %}
+              <li><a href="{% url 'transport:route_list' %}"
+                     class="block px-2 py-1 rounded transition {% if 'route' in path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">
+                Rutas</a></li>
+              <li><a href="{% url 'transport:trip_list' %}"
+                     class="block px-2 py-1 rounded transition {% if 'trip' in path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">
+                Viajes</a></li>
+              <li><a href="{% url 'transport:stop_list_all' %}"
+                     class="block px-2 py-1 rounded transition {% if 'stop' in path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">
+                Paradas</a></li>
+              <li><a href="{% url 'transport:incident_list' %}"
+                     class="block px-2 py-1 rounded transition {% if 'incident' in path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">
+                Incidentes</a></li>
             {% endif %}
 
-            {% if user.is_superuser or user_role == "ops_manager" %}
-              <li><a href="{% url 'transport:expense_list' %}" class="block px-2 py-1 rounded transition {% if 'expense' in request.path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">Gastos</a></li>
+            {% if user.is_superuser or user_role == 'ops_manager' %}
+              <li><a href="{% url 'transport:expense_list' %}"
+                     class="block px-2 py-1 rounded transition {% if 'expense' in path %}bg-black text-white{% else %}hover:bg-gray-200{% endif %}">
+                Gastos</a></li>
             {% endif %}
+
           </ul>
         </li>
         {% endif %}
 
         <!-- Inventario -->
-        <li>
-          <a href="#" class="flex items-center space-x-2 p-2 rounded-lg shadow transition font-medium text-gray-700 hover:bg-black hover:text-white">
-            <i class="bi bi-box-seam"></i><span class="text-base">Inventario</span>
-          </a>
+        {% if user.is_superuser or user_role in "ops_manager warehouse_manager warehouse_staff inventory_controller viewer" %}
+        <li x-data="{ openInventory: {% if ns == 'product_categories' or ns == 'inventory_product' or ns == 'inventory_stock' or ns == 'inventory_receiving' or ns == 'inventory_movements' or ns == 'inventory_adjustments' or ns == 'inventory_alerts' or ns == 'inventory_kardex' %}true{% else %}false{% endif %} }">
+
+          <button @click="openInventory = !openInventory"
+                  type="button"
+                  class="w-full flex items-center justify-between p-2 rounded-lg shadow transition font-medium
+                         {% if ns == 'product_categories' or ns == 'inventory_product' or ns == 'inventory_stock' or ns == 'inventory_receiving' or ns == 'inventory_movements' or ns == 'inventory_adjustments' or ns == 'inventory_alerts' or ns == 'inventory_kardex' %}
+                           bg-black text-white
+                         {% else %}
+                           text-gray-700 hover:bg-black hover:text-white
+                         {% endif %}">
+            <span class="flex items-center space-x-2">
+              <i class="bi bi-box-seam"></i><span class="text-base">Inventario</span>
+            </span>
+            <i class="bi" :class="openInventory ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+          </button>
+
+          <ul x-show="openInventory" x-transition class="pl-4 mt-2 space-y-1 origin-top">
+
+            <!-- Configuración -->
+            <li class="text-xs text-gray-400 uppercase tracking-wider mt-3">Configuración</li>
+
+            {% if user.is_superuser or user_role in "ops_manager warehouse_manager inventory_controller viewer" %}
+            <li>
+              <a href="{% url 'product_categories:category_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if ns == 'product_categories' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Categorías
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'inventory_product:product_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if ns == 'inventory_product' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Productos
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'inventory_stock:location_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if url_name == 'location_list' or url_name == 'location_create' or url_name == 'location_update' or url_name == 'location_delete' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Ubicaciones
+              </a>
+            </li>
+            {% endif %}
+
+            <!-- Operaciones -->
+            <li class="text-xs text-gray-400 uppercase tracking-wider mt-3">Operaciones</li>
+
+            {% if user.is_superuser or user_role in "ops_manager warehouse_manager warehouse_staff inventory_controller viewer" %}
+            <li>
+              <a href="{% url 'inventory_receiving:reception_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if ns == 'inventory_receiving' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Recepciones
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'inventory_movements:movement_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if ns == 'inventory_movements' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Movimientos
+              </a>
+            </li>
+            {% endif %}
+
+            {% if user.is_superuser or user_role in "ops_manager warehouse_manager inventory_controller viewer" %}
+            <li>
+              <a href="{% url 'inventory_adjustments:adjustment_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if ns == 'inventory_adjustments' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Ajustes
+              </a>
+            </li>
+            {% endif %}
+
+            <!-- Consultas -->
+            <li class="text-xs text-gray-400 uppercase tracking-wider mt-3">Consultas</li>
+
+            {% if user.is_superuser or user_role in "ops_manager warehouse_manager inventory_controller viewer" %}
+            <li>
+              <a href="{% url 'inventory_stock:stock_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if url_name == 'stock_list' or url_name == 'stock_create' or url_name == 'stock_update' or url_name == 'stock_delete' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Stock por Ubicación
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'inventory_alerts:alert_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if ns == 'inventory_alerts' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Alertas de Stock
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'inventory_kardex:kardex_list' %}"
+                 class="block px-2 py-1.5 rounded transition {% if ns == 'inventory_kardex' %}bg-black text-white{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                Kardex
+              </a>
+            </li>
+            {% endif %}
+          </ul>
         </li>
+        {% endif %}
 
         <!-- Reportes -->
         <li>
@@ -96,6 +206,7 @@
             <i class="bi bi-gear-fill"></i><span class="text-base">Configuración</span>
           </a>
         </li>
+
       </ul>
       {% endwith %}
     </div>

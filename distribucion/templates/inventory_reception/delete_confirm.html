@@ -1,0 +1,37 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Eliminar Recepción{% endblock %}
+
+{% block inner_content %}
+<form id="deleteForm" method="post">
+  {% csrf_token %}
+</form>
+
+<!-- SweetAlert2 desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      html: `
+        <p>¿Deseas eliminar la recepción del producto <strong>{{ object.product.name }}</strong>?</p>
+        <p><strong>Cantidad:</strong> {{ object.quantity_received }}</p>
+        <p><strong>Proveedor:</strong> {{ object.supplier }}</p>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById("deleteForm").submit();
+      } else {
+        // Redirige al listado de recepciones si cancela
+        window.location.href = "{% url 'inventory_receiving:reception_list' %}";
+      }
+    });
+  });
+</script>
+{% endblock %}

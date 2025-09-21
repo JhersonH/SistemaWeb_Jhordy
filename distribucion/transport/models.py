@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from inventory_product.models import Product
+from inventory_stock.models import StockLocation
 
 class Vehicle(models.Model):
     STATUS_CHOICES = [
@@ -33,8 +35,8 @@ class Driver(models.Model):
 
 class Route(models.Model):
     name = models.CharField(max_length=60)
-    origin = models.CharField(max_length=120)
-    destination = models.CharField(max_length=120)
+    origin = models.ForeignKey(StockLocation, on_delete=models.CASCADE, related_name='routes_origin')
+    destination = models.ForeignKey(StockLocation, on_delete=models.CASCADE, related_name='routes_destination')
     distance_km = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     eta_minutes = models.PositiveIntegerField(default=0)
 
@@ -59,8 +61,31 @@ class Trip(models.Model):
     odometer_end = models.PositiveIntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)
 
+    is_reception = models.BooleanField(default=False, verbose_name="Es recepción")
+
     def __str__(self):
         return f'{self.code} - {self.get_status_display()}'
+
+class TripProduct(models.Model):
+    trip = models.ForeignKey(
+        Trip,
+        on_delete=models.CASCADE,
+        related_name="products",
+        verbose_name="Viaje"
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name="Producto"
+    )
+    quantity = models.PositiveIntegerField("Cantidad")
+
+    class Meta:
+        verbose_name = "Producto del Viaje"
+        verbose_name_plural = "Productos del Viaje"
+
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity}) - {self.trip.code}"
 
 class Stop(models.Model):
     STATUS = [

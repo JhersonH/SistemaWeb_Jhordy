@@ -1,0 +1,91 @@
+{% extends 'base/base_dashboard.html' %}
+{% load static %}
+{% block title %}Movimientos de Inventario{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-between align-items-center">
+    <h5 class="mb-0">
+      <i class="bi bi-arrow-left-right me-2"></i> Movimientos de Inventario
+    </h5>
+    <a href="{% url 'inventory_movements:movement_create' %}" class="btn btn-light text-primary fw-semibold">
+      <i class="bi bi-plus-circle"></i> Nuevo Movimiento
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="px-3 pt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <table class="table table-striped mb-0 align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Cantidad</th>
+            <th>Ubicación</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for movement in movements %}
+          <tr>
+            <td class="fw-bold">
+              <i class="bi bi-box me-1 text-primary"></i>
+              {{ movement.product.name }}
+            </td>
+            <td>
+              {% if movement.movement_type == 'IN' %}
+                <span class="badge bg-success">Entrada</span>
+              {% elif movement.movement_type == 'OUT' %}
+                <span class="badge bg-danger">Salida</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ movement.get_movement_type_display }}</span>
+              {% endif %}
+            </td>
+            <td>{{ movement.quantity }}</td>
+            <td>{{ movement.location }}</td>
+            <td>
+              <span class="badge bg-light text-muted">
+                {{ movement.date|date:"d/m/Y H:i" }}
+              </span>
+            </td>
+            <td>
+              <a href="{% url 'inventory_movements:movement_update' movement.id %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <a href="{% url 'inventory_movements:movement_delete' movement.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              <i class="bi bi-info-circle me-2"></i>No se encontraron movimientos registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.add('fade', 'show');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+
+{% endblock %}
