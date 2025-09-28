@@ -1,0 +1,93 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Reporte de Proveedores{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-people me-2"></i> Reporte de Proveedores</h5>
+    <div>
+      <a href="{% url 'reports:suppliers_report_xlsx' %}" class="btn btn-sm btn-success">
+        <i class="bi bi-file-earmark-excel"></i> Exportar XLSX
+      </a>
+      <a href="{% url 'reports:suppliers_report_pdf' %}" class="btn btn-sm btn-danger">
+        <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+      </a>
+      <a href="#" onclick="window.print()" class="btn btn-sm btn-secondary">
+        <i class="bi bi-printer"></i> Imprimir
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0 text-center align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>Contacto</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.contact_name }}</td>
+          <td>{{ s.phone }}</td>
+          <td>{{ s.email }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-muted">No hay proveedores</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="card-footer text-center">
+    {% if suppliers.has_other_pages %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mb-0">
+          {% if suppliers.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ suppliers.previous_page_number }}" aria-label="Anterior">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&laquo;</span>
+            </li>
+          {% endif %}
+
+          {% for num in suppliers.paginator.page_range %}
+            {% if suppliers.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if suppliers.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ suppliers.next_page_number }}" aria-label="Siguiente">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      <p class="text-muted mt-2 mb-0">
+        Página {{ suppliers.number }} de {{ suppliers.paginator.num_pages }} |
+        Total de proveedores: {{ suppliers.paginator.count }}
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

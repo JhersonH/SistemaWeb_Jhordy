@@ -26,6 +26,8 @@ urlpatterns = [
     path('kardex/', include('inventory_kardex.urls')),
     path('ajustes-inventario/', include('inventory_adjustments.urls')),
     path('recepcion-productos/', include('inventory_receiving.urls')),
+    path("proveedores/", include("suppliers.urls", namespace="suppliers")),
+    path("reports/", include("reports.urls", namespace="reports")),
 
     # Auth
     path("accounts/login/", CustomLoginView.as_view(), name="login"),

@@ -10,4 +10,7 @@ urlpatterns = [
     path("<int:pk>/edit/", views.user_update, name="update"),
     path("<int:pk>/toggle-active/", views.user_toggle_active, name="toggle_active"),
     path("<int:pk>/reset-password/", views.user_reset_password, name="reset_password"),
+    path("empleados/", views.employee_list, name="employee_list"),
+    path("empleados/<int:pk>/editar/", views.employee_update, name="employee_update"),
+    path("perfil/", views.profile_update, name="profile_update"),
 ]

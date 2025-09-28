@@ -1,0 +1,20 @@
+{% for profile in employees %}
+<tr>
+  <td>{{ profile.user.get_full_name|default:"—" }}</td>
+  <td>{{ profile.doc_id|default:"—" }}</td>
+  <td>{{ profile.phone|default:"—" }}</td>
+  <td>{{ profile.birth_date|date:"d/m/Y"|default:"—" }}</td>
+  <td>{{ profile.hire_date|date:"d/m/Y"|default:"—" }}</td>
+  <td>{{ profile.address|default:"—" }}</td>
+  <td>{{ profile.position|default:"—" }}</td>
+  <td>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'users:employee_update' profile.user.id %}">
+      <i class="bi bi-pencil-square"></i>
+    </a>
+  </td>
+</tr>
+{% empty %}
+<tr>
+  <td colspan="8" class="text-center py-4 text-muted">Sin resultados</td>
+</tr>
+{% endfor %}

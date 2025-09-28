@@ -1,0 +1,91 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Reporte de Stock{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i> Reporte de Stock</h5>
+    <div>
+      <a href="{% url 'reports:stock_report_xlsx' %}" class="btn btn-sm btn-success">
+        <i class="bi bi-file-earmark-excel"></i> Exportar XLSX
+      </a>
+      <a href="{% url 'reports:stock_report_pdf' %}" class="btn btn-sm btn-danger">
+        <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+      </a>
+      <a href="#" onclick="window.print()" class="btn btn-sm btn-secondary">
+        <i class="bi bi-printer"></i> Imprimir
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0 text-center align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Producto</th>
+          <th>Ubicación</th>
+          <th>Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stocks %}
+        <tr>
+          <td>{{ s.product }}</td>
+          <td>{{ s.location }}</td>
+          <td>{{ s.quantity }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-muted">No hay stock registrado</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="card-footer text-center">
+    {% if stocks.has_other_pages %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mb-0">
+          {% if stocks.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ stocks.previous_page_number }}" aria-label="Anterior">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&laquo;</span>
+            </li>
+          {% endif %}
+
+          {% for num in stocks.paginator.page_range %}
+            {% if stocks.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if stocks.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ stocks.next_page_number }}" aria-label="Siguiente">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      <p class="text-muted mt-2 mb-0">
+        Página {{ stocks.number }} de {{ stocks.paginator.num_pages }} |
+        Total: {{ stocks.paginator.count }} registros
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

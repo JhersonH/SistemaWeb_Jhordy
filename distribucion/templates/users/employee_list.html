@@ -1,0 +1,67 @@
+{% extends "base/base_dashboard.html" %}
+{% load static %}
+{% block inner_content %}
+
+<h2 class="text-lg font-semibold mb-4">
+  <i class="bi bi-person-badge me-2"></i>Gestión de Empleados
+</h2>
+
+<!-- Filtros -->
+<div class="d-flex justify-between items-center mb-4">
+  <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre o DNI...">
+  <select id="roleFilter" class="form-select w-60 ms-3">
+    <option value="">— Filtrar por rol —</option>
+    {% for r in roles %}
+      <option value="{{ r.id }}">{{ r.get_role_type_display }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<!-- Tabla de empleados -->
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th>DNI/RUC</th>
+            <th>Teléfono</th>
+            <th>F. Nacimiento</th>
+            <th>F. Ingreso</th>
+            <th>Dirección</th>
+            <th>Cargo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTable">
+          {% include "users/_employee_table.html" %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Script para filtros dinámicos -->
+<script>
+  const searchInput = document.getElementById("searchInput");
+  const roleFilter = document.getElementById("roleFilter");
+
+  function fetchFilteredEmployees() {
+    const q = searchInput.value;
+    const role = roleFilter.value;
+
+    fetch(`?q=${q}&role=${role}`, {
+      headers: { 'x-requested-with': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById("employeeTable").innerHTML = data.html;
+    });
+  }
+
+  searchInput.addEventListener("input", fetchFilteredEmployees);
+  roleFilter.addEventListener("change", fetchFilteredEmployees);
+</script>
+
+{% endblock %}

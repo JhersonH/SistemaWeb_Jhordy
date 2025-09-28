@@ -11,6 +11,12 @@ class Profile(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
 
+    # Nuevos campos:
+    birth_date = models.DateField(null=True, blank=True, verbose_name="Fecha de nacimiento")
+    address = models.TextField(blank=True, verbose_name="Dirección")
+    hire_date = models.DateField(null=True, blank=True, verbose_name="Fecha de ingreso")
+    position = models.CharField(max_length=100, blank=True, verbose_name="Cargo")
+
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username} ({self.role})"
 

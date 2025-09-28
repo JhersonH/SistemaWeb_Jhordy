@@ -1,0 +1,95 @@
+{% extends 'base/base_dashboard.html' %}
+{% block title %}Reporte de Recepciones{% endblock %}
+
+{% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-box-arrow-in-down me-2"></i> Reporte de Recepciones</h5>
+    <div>
+      <a href="{% url 'reports:receptions_report_xlsx' %}" class="btn btn-sm btn-success">
+        <i class="bi bi-file-earmark-excel"></i> Exportar XLSX
+      </a>
+      <a href="{% url 'reports:receptions_report_pdf' %}" class="btn btn-sm btn-danger">
+        <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+      </a>
+      <a href="#" onclick="window.print()" class="btn btn-sm btn-secondary">
+        <i class="bi bi-printer"></i> Imprimir
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0 text-center align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Proveedor</th>
+          <th>Ubicación</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in receptions %}
+        <tr>
+          <td>{{ r.product }}</td>
+          <td>{{ r.quantity_received }}</td>
+          <td>{{ r.supplier }}</td>
+          <td>{{ r.location }}</td>
+          <td>{{ r.reception_date|date:"Y-m-d" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-muted">No hay recepciones</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="card-footer text-center">
+    {% if receptions.has_other_pages %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mb-0">
+          {% if receptions.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ receptions.previous_page_number }}" aria-label="Anterior">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&laquo;</span>
+            </li>
+          {% endif %}
+
+          {% for num in receptions.paginator.page_range %}
+            {% if receptions.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if receptions.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ receptions.next_page_number }}" aria-label="Siguiente">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      <p class="text-muted mt-2 mb-0">
+        Página {{ receptions.number }} de {{ receptions.paginator.num_pages }} |
+        Total: {{ receptions.paginator.count }} recepciones
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -97,6 +97,9 @@ class TripForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['date'].input_formats = ['%d-%m-%Y']
 
+        if self.instance and self.instance.pk:
+            self.fields.pop('is_reception', None)
+
 class TripProductForm(forms.ModelForm):
     class Meta:
         model = TripProduct

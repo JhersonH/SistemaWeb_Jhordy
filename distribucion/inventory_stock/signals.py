@@ -13,6 +13,10 @@ def update_stock_from_movement(sender, instance, created, **kwargs):
     if not created:
         return
 
+    # Evitar duplicar Kardex si el movimiento viene de una recepción
+    if hasattr(instance, "origin") and instance.origin == "reception":
+        return
+
     product = instance.product
     location = instance.location
     qty = instance.quantity
@@ -22,16 +26,13 @@ def update_stock_from_movement(sender, instance, created, **kwargs):
     if instance.movement_type == "input":
         stock.quantity += qty
         entry_type = "input"
-
     elif instance.movement_type == "output":
         if stock.quantity < qty:
-            # seguridad: nunca debería llegar aquí porque el form valida primero
             raise ValueError("Stock insuficiente para realizar esta salida.")
         stock.quantity -= qty
         entry_type = "output"
-
-    else:  # adjustment
-        stock.quantity += qty  # ojo: aquí depende si qty es +/- (puedes ajustarlo)
+    else:
+        stock.quantity += qty
         entry_type = "adjustment"
 
     stock.save()

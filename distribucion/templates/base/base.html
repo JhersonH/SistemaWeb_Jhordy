@@ -17,11 +17,57 @@
     <style> body { font-family: 'Nunito', sans-serif;} </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     {% if request.resolver_match.url_name == 'login' %}
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     {% endif %}
+
+    <style>
+      @media print {
+        /* Ocultar todos los elementos de navegación, sidebar, botones, pie, etc. */
+        aside,
+        nav,
+        .sidebar,
+        .navbar,
+        .btn,
+        .card-header,
+        .card-footer,
+        .dropdown,
+        .pagination,
+        footer,
+        header,
+        .print-hidden {
+          display: none !important;
+          visibility: hidden !important;
+        }
+
+        /* Expandir contenido principal */
+        main,
+        .card,
+        .card-body,
+        .content,
+        .content-wrapper,
+        #main-content {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+        }
+
+        body {
+          background: white !important;
+          margin: 0;
+        }
+
+        table {
+          width: 100% !important;
+          font-size: 12px;
+        }
+      }
+    </style>
+
 </head>
 <body>
 

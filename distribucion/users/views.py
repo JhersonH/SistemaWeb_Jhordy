@@ -1,13 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.core.paginator import Paginator
+from .forms import UserProfileUpdateForm
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponseForbidden
-
+from django.contrib.auth import update_session_auth_hash
 from .forms import UserCreateForm, UserUpdateForm, ProfileForm, AdminSetPasswordForm
 from .models import Profile
 from roles.models import Role
@@ -125,3 +125,93 @@ def user_reset_password(request, pk):
     else:
         form = AdminSetPasswordForm(user)
     return render(request, "users/reset_password.html", {"form": form, "user_obj": user})
+
+@login_required
+@staff_required
+def employee_list(request):
+    q = request.GET.get("q", "").strip()
+    role_id = request.GET.get("role", "").strip()
+
+    # Excluye usuarios superusuarios o staff
+    employees = Profile.objects.select_related("user", "role") \
+        .exclude(user__is_superuser=True) \
+        .exclude(user__is_staff=True)
+
+    roles = Role.objects.all()
+
+    if q:
+        employees = employees.filter(user__first_name__icontains=q)
+    if role_id:
+        employees = employees.filter(role_id=role_id)
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        html = render_to_string(
+            "users/_employee_table.html",
+            {"employees": employees},  # 👈 MISMO NOMBRE
+            request=request
+        )
+        return JsonResponse({"html": html})
+
+    return render(request, "users/employee_list.html", {
+        "employees": employees,  # 👈 MISMO NOMBRE
+        "roles": roles,
+    })
+
+@login_required
+@staff_required
+@transaction.atomic
+def employee_update(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    profile, _ = Profile.objects.get_or_create(user=user)
+
+    if request.method == "POST":
+        pform = ProfileForm(request.POST, request.FILES, instance=profile)
+        if pform.is_valid():
+            pform.save()
+            messages.success(request, "Empleado actualizado correctamente.")
+            return redirect("users:employee_list")
+    else:
+        pform = ProfileForm(instance=profile)
+
+    return render(request, "users/employee_form.html", {
+        "profile_form": pform,
+        "user": user,
+        "title": "Editar Empleado"
+    })
+
+@login_required
+@transaction.atomic
+def profile_update(request):
+    user = request.user
+    profile, _ = Profile.objects.get_or_create(user=user)
+
+    if request.method == "POST":
+        user_form = UserProfileUpdateForm(request.POST, instance=user)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_obj = user_form.save(commit=False)
+            new_password = user_form.cleaned_data.get("new_password")
+
+            print("Contraseña nueva recibida:", new_password)  # DEBUG
+
+            if new_password and new_password.strip():
+                user_obj.set_password(new_password)
+                user_obj.save()
+                update_session_auth_hash(request, user_obj)  # No cerrar sesión
+            else:
+                user_obj.save()
+
+            profile_form.save()
+
+            messages.success(request, "Tu perfil ha sido actualizado correctamente.")
+            return redirect("users:profile_update")
+    else:
+        user_form = UserProfileUpdateForm(instance=user)
+        profile_form = ProfileForm(instance=profile)
+
+    return render(request, "users/profile_form.html", {
+        "user_form": user_form,
+        "profile_form": profile_form,
+        "title": "Mi perfil"
+    })

@@ -21,17 +21,30 @@ class UserUpdateForm(forms.ModelForm):
         fields = ("username", "first_name", "last_name", "email", "is_active")
 
 class ProfileForm(forms.ModelForm):
-    role = forms.ModelChoiceField(
-        queryset=Role.objects.filter(is_active=True).order_by("role_type"),
-        required=False,
-        empty_label="-- Selecciona un rol --",
-        label="Rol"
-    )
-
     class Meta:
         model = Profile
-        fields = ("role", "doc_id", "phone", "avatar")
+        fields = [
+            "role", "doc_id", "phone", "avatar",
+            "birth_date", "address", "hire_date", "position"
+        ]
+        widgets = {
+            "birth_date": forms.DateInput(attrs={"type": "date"}),
+            "hire_date": forms.DateInput(attrs={"type": "date"}),
+            "address": forms.Textarea(attrs={"rows": 2}),
+        }
 
 class AdminSetPasswordForm(SetPasswordForm):
     """Para que un admin cambie la contraseña de otro usuario."""
     pass
+
+class UserProfileUpdateForm(forms.ModelForm):
+    new_password = forms.CharField(
+        label="Nueva contraseña",
+        required=False,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Dejar vacío para no cambiarla'}),
+        help_text="Déjalo vacío si no deseas cambiar tu contraseña."
+    )
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email']

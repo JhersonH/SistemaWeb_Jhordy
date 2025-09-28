@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'inventory_kardex',
     'inventory_adjustments',
     'inventory_receiving',
-
+    'suppliers',
+    'reports',
 ]
 
 MIDDLEWARE = [

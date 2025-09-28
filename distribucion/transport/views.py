@@ -149,7 +149,12 @@ def trip_create(request):
     else:
         form = TripForm()
         formset = TripProductFormSet()
-    return render(request, "transport/trip/form.html", {"form": form, "formset": formset, "title": "Nuevo viaje"})
+    return render(request, "transport/trip/form.html", {
+        "form": form,
+        "formset": formset,
+        "title": "Nuevo viaje",
+        "is_create": True
+    })
 
 
 @login_required
@@ -161,7 +166,12 @@ def trip_update(request, pk):
         form.save()
         messages.success(request, "Viaje actualizado correctamente.")
         return redirect("transport:trip_list")
-    return render(request, "transport/trip/form.html", {"form": form, "title": f"Editar {trip.code}"})
+    return render(request, "transport/trip/form.html", {
+        "form": form,
+        "title": f"Editar {trip.code}",
+        "trip": trip,
+        "is_create": False
+    })
 
 
 @login_required
