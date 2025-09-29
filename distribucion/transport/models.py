@@ -3,6 +3,23 @@ from django.contrib.auth.models import User
 from inventory_product.models import Product
 from inventory_stock.models import StockLocation
 
+class VehicleBrand(models.Model):
+    name = models.CharField('Marca', max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class VehicleModel(models.Model):
+    brand = models.ForeignKey(VehicleBrand, on_delete=models.CASCADE, related_name="models")
+    name = models.CharField('Modelo', max_length=50)
+
+    class Meta:
+        unique_together = ('brand', 'name')
+        ordering = ['brand__name', 'name']
+
+    def __str__(self):
+        return f'{self.brand.name} {self.name}'
+
 class Vehicle(models.Model):
     STATUS_CHOICES = [
         ('available', 'Disponible'),
@@ -10,8 +27,8 @@ class Vehicle(models.Model):
         ('retired', 'Baja'),
     ]
     plate = models.CharField('Placa', max_length=15, unique=True)
-    brand = models.CharField('Marca', max_length=30, blank=True)
-    model = models.CharField('Modelo', max_length=30, blank=True)
+    brand = models.ForeignKey(VehicleBrand, on_delete=models.SET_NULL, null=True, blank=True)
+    model = models.ForeignKey(VehicleModel, on_delete=models.SET_NULL, null=True, blank=True)
     year = models.PositiveIntegerField(null=True, blank=True)
     capacity_kg = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     volume_m3 = models.DecimalField(max_digits=10, decimal_places=2, default=0)

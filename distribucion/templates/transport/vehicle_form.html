@@ -33,14 +33,14 @@
           <div class="row g-2">
             <div class="col">
               <label class="form-label">Marca</label>
-              {{ form.brand|add_class:"form-control" }}
+              {{ form.brand|add_class:"form-control select2-ajax-brand" }}
               {% if form.brand.errors %}
                 <div class="text-danger small">{{ form.brand.errors }}</div>
               {% endif %}
             </div>
             <div class="col">
               <label class="form-label">Modelo</label>
-              {{ form.model|add_class:"form-control" }}
+              {{ form.model|add_class:"form-control select2-ajax-model" }}
               {% if form.model.errors %}
                 <div class="text-danger small">{{ form.model.errors }}</div>
               {% endif %}
@@ -96,14 +96,14 @@
           <div class="row g-2">
             <div class="col">
               <label class="form-label">Vencimiento SOAT/Seguro</label>
-              {{ form.insurance_expiry|add_class:"form-control" }}
+              {{ form.insurance_expiry|add_class:"form-control datepicker" }}
               {% if form.insurance_expiry.errors %}
                 <div class="text-danger small">{{ form.insurance_expiry.errors }}</div>
               {% endif %}
             </div>
             <div class="col">
               <label class="form-label">Próximo mantenimiento</label>
-              {{ form.next_maintenance|add_class:"form-control" }}
+              {{ form.next_maintenance|add_class:"form-control datepicker" }}
               {% if form.next_maintenance.errors %}
                 <div class="text-danger small">{{ form.next_maintenance.errors }}</div>
               {% endif %}
@@ -125,14 +125,80 @@
   </form>
 </div>
 
+<!-- Flatpickr para fechas -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  flatpickr(".datepicker", {
+    dateFormat: "d-m-Y",
+    allowInput: true
+  });
+</script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    flatpickr(".datepicker", {
-      dateFormat: "d-m-Y",  // formato: dd-mm-yyyy
-      allowInput: true
+  document.addEventListener("DOMContentLoaded", function () {
+    // Marca (autocomplete + focus on open)
+    $('#id_brand').select2({
+      theme: 'bootstrap4',
+      placeholder: 'Seleccionar marca',
+      allowClear: true,
+      ajax: {
+        url: "{% url 'transport:ajax_brand_autocomplete' %}",
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return {
+            q: params.term
+          };
+        },
+        processResults: function (data) {
+          return {
+            results: data.results
+          };
+        },
+        cache: true
+      }
+    }).on('select2:open', function () {
+      setTimeout(function () {
+        const searchField = document.querySelector('.select2-container--open .select2-search__field');
+        if (searchField) searchField.focus();
+      }, 0);
+    });
+
+    // Modelo (dependiente de marca + focus on open)
+    $('#id_model').select2({
+      theme: 'bootstrap4',
+      placeholder: 'Seleccionar modelo',
+      allowClear: true,
+      ajax: {
+        url: "{% url 'transport:ajax_model_autocomplete' %}",
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return {
+            q: params.term,
+            brand_id: $('#id_brand').val()
+          };
+        },
+        processResults: function (data) {
+          return {
+            results: data.results
+          };
+        },
+        cache: true
+      }
+    }).on('select2:open', function () {
+      setTimeout(function () {
+        const searchField = document.querySelector('.select2-container--open .select2-search__field');
+        if (searchField) searchField.focus();
+      }, 0);
+    });
+
+    // Limpiar modelo si cambia marca
+    $('#id_brand').on('change', function () {
+      $('#id_model').val(null).trigger('change');
     });
   });
 </script>
+
+
 {% endblock %}

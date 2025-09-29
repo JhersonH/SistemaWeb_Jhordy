@@ -8,6 +8,9 @@ urlpatterns = [
     path('vehicles/create/', views.VehicleCreateView.as_view(), name='vehicle_create'),
     path('vehicles/<int:pk>/edit/', views.VehicleUpdateView.as_view(), name='vehicle_edit'),
     path('vehicles/<int:pk>/delete/', views.VehicleDeleteView.as_view(), name='vehicle_delete'),
+    path('ajax/load-vehicle-models/', views.load_vehicle_models, name='ajax_load_vehicle_models'),
+    path('ajax/autocomplete/brand/', views.ajax_brand_autocomplete, name='ajax_brand_autocomplete'),
+    path('ajax/autocomplete/model/', views.ajax_model_autocomplete, name='ajax_model_autocomplete'),
 
     path('drivers/', views.driver_list, name='driver_list'),
     path('drivers/new/', views.driver_create, name='driver_create'),

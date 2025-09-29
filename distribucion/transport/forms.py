@@ -9,8 +9,8 @@ class VehicleForm(forms.ModelForm):
         fields = '__all__'
         labels = {
             'plate': 'Placa del vehículo',
-            'brand': 'Marca',
-            'model': 'Modelo',
+            'brand': forms.Select(attrs={'class': 'form-control select2-ajax-brand'}),
+            'model': forms.Select(attrs={'class': 'form-control select2-ajax-model'}),
             'year': 'Año',
             'capacity_kg': 'Capacidad (kg)',
             'volume_m3': 'Volumen (m³)',

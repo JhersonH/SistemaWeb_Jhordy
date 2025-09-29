@@ -6,8 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from distribution.decorators import role_required
 from .forms import *
-from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident
-
+from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident, VehicleModel, VehicleBrand
+from django.http import JsonResponse
 
 # ---------------- VEHICLES ----------------
 @method_decorator([login_required, role_required(['ops_manager', 'warehouse_manager', 'viewer'])], name='dispatch')
@@ -38,6 +38,35 @@ class VehicleDeleteView(DeleteView):
     template_name = 'transport/vehicle_confirm_delete.html'
     success_url = reverse_lazy('transport:vehicle_list')
 
+@login_required
+def load_vehicle_models(request):
+    brand_id = request.GET.get("brand_id")
+    if not brand_id:
+        return JsonResponse([], safe=False)
+
+    models = VehicleModel.objects.filter(brand_id=brand_id).order_by("name")
+    model_list = [{"id": m.id, "name": m.name} for m in models]
+    return JsonResponse(model_list, safe=False)
+
+@login_required
+def ajax_brand_autocomplete(request):
+    term = request.GET.get("q", "")
+    brands = VehicleBrand.objects.filter(name__icontains=term).order_by("name")
+    results = [{"id": b.id, "text": b.name} for b in brands]
+    return JsonResponse({"results": results})
+
+@login_required
+def ajax_model_autocomplete(request):
+    term = request.GET.get("q", "")
+    brand_id = request.GET.get("brand_id")
+
+    qs = VehicleModel.objects.all()
+    if brand_id:
+        qs = qs.filter(brand_id=brand_id)
+
+    models = qs.filter(name__icontains=term).order_by("name")
+    results = [{"id": m.id, "text": m.name} for m in models]
+    return JsonResponse({"results": results})
 
 # ---------------- DRIVERS ----------------
 @login_required

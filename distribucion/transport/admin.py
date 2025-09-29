@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident
+from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident, VehicleBrand, VehicleModel
 
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
@@ -30,3 +30,14 @@ class TripAdmin(admin.ModelAdmin):
 
 admin.site.register(Expense)
 admin.site.register(Incident)
+
+@admin.register(VehicleBrand)
+class VehicleBrandAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+@admin.register(VehicleModel)
+class VehicleModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'brand')
+    list_filter = ('brand',)
+    search_fields = ('name',)
