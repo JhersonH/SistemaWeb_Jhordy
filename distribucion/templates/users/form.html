@@ -111,6 +111,14 @@
               </div>
             {% endif %}
           </div>
+
+          <!-- Campos ocultos de Profile -->
+          <div style="display: none;">
+            {{ profile_form.birth_date }}
+            {{ profile_form.address }}
+            {{ profile_form.hire_date }}
+            {{ profile_form.position }}
+          </div>
         </div>
       </div>
     </div>
@@ -121,4 +129,48 @@
     </div>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const docIdInput = document.getElementById('id_doc_id'); // Campo DNI/RUC en el formulario
+
+    if (docIdInput) {
+      docIdInput.addEventListener('blur', function() {
+        const dni = this.value.trim();
+        if (!dni) return;
+
+        fetch(`{% url 'users:ajax_load_user_data' %}?dni=${encodeURIComponent(dni)}`)
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else if (response.status === 404) {
+              return null;
+            } else {
+              throw new Error("Error en la respuesta del servidor.");
+            }
+          })
+          .then(data => {
+            if (data) {
+              // ✅ Llenar campos de User
+              document.getElementById('id_first_name').value = data.first_name || '';
+              document.getElementById('id_last_name').value = data.last_name || '';
+              document.getElementById('id_email').value = data.email || '';
+              document.getElementById('id_username').value = data.username || '';
+              document.getElementById('id_phone').value = data.phone || '';
+
+              // ✅ Llenar campos de Profile (ocultos)
+              document.getElementById('id_birth_date').value = data.birth_date || '';
+              document.getElementById('id_address').value = data.address || '';
+              document.getElementById('id_hire_date').value = data.hire_date || '';
+              document.getElementById('id_position').value = data.position || '';
+            }
+          })
+          .catch(error => {
+            console.error("Error al cargar datos del usuario:", error);
+          });
+      });
+    }
+  });
+</script>
+
 {% endblock %}

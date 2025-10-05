@@ -1,0 +1,82 @@
+{
+  "Ica - Parcona": {
+    "distance_km": 1000,
+    "eta_minutes": 1200
+  },
+  "Ica - Tinguiña": {
+    "distance_km": 1200,
+    "eta_minutes": 1440
+  },
+  "Parcona - Ica": {
+    "distance_km": 560,
+    "eta_minutes": 672
+  },
+  "Lima - Ica": {
+    "distance_km": 300,
+    "eta_minutes": 360
+  },
+  "Lima - Chiclayo": {
+    "distance_km": 800,
+    "eta_minutes": 960
+  },
+  "Arequipa - Cusco": {
+    "distance_km": 500,
+    "eta_minutes": 600
+  },
+  "Arequipa - Trujillo": {
+    "distance_km": 1100,
+    "eta_minutes": 1320
+  },
+  "Cusco - Trujillo": {
+    "distance_km": 1300,
+    "eta_minutes": 1560
+  },
+  "Trujillo - Ica": {
+    "distance_km": 600,
+    "eta_minutes": 720
+  },
+  "Ica - Chiclayo": {
+    "distance_km": 900,
+    "eta_minutes": 1080
+  },
+  "Chiclayo - Arequipa": {
+    "distance_km": 850,
+    "eta_minutes": 1020
+  },
+  "Lima - Piura": {
+    "distance_km": 1100,
+    "eta_minutes": 1320
+  },
+  "Piura - Tumbes": {
+    "distance_km": 200,
+    "eta_minutes": 240
+  },
+  "Tumbes - Lima": {
+    "distance_km": 1300,
+    "eta_minutes": 1560
+  },
+  "Lima - Huaraz": {
+    "distance_km": 400,
+    "eta_minutes": 480
+  },
+  "Huaraz - Chimbote": {
+    "distance_km": 200,
+    "eta_minutes": 240
+  },
+  "Chimbote - Lima": {
+    "distance_km": 400,
+    "eta_minutes": 480
+  },
+  "Lima - Puno": {
+    "distance_km": 1300,
+    "eta_minutes": 1560
+  },
+  "Puno - Arequipa": {
+    "distance_km": 400,
+    "eta_minutes": 480
+  },
+  "Arequipa - Puno": {
+    "distance_km": 400,
+    "eta_minutes": 480
+  }
+}

@@ -6,7 +6,9 @@
 {% block inner_content %}
 <div class="card shadow-sm">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-    <h5 class="mb-0"><i class="bi bi-tags-fill me-2"></i> Categorías de Productos</h5>
+    <h5 class="mb-0">
+      <i class="bi bi-tags-fill me-2"></i> Categorías de Productos
+    </h5>
     <a href="{% url 'product_categories:category_create' %}" class="btn btn-light text-primary fw-semibold">
       <i class="bi bi-plus-circle"></i> Nueva Categoría
     </a>
@@ -20,47 +22,95 @@
     </div>
   {% endif %}
 
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-0">
-      <table class="table table-striped mb-0 align-middle text-center">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Nombre</th>
-            <th scope="col">Descripción</th>
-            <th scope="col">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for category in categories %}
-          <tr>
-            <td class="fw-bold">
-              <i class="bi bi-tag-fill me-1 text-primary"></i>
-              {{ category.name }}
-            </td>
-            <td>{{ category.description|default:"—" }}</td>
-            <td>
-              <a href="{% url 'product_categories:category_update' category.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <a href="{% url 'product_categories:category_delete' category.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                <i class="bi bi-trash"></i>
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="3" class="text-center text-muted py-4">
-              <i class="bi bi-info-circle me-2"></i>No hay categorías registradas.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="card-body">
+    <table id="categoriesTable" class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
+        <tr>
+          <th data-field="name" data-sortable="true">Nombre</th>
+          <th data-field="description" data-sortable="true">Descripción</th>
+          <th data-field="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+        <tr>
+          <td class="fw-bold">
+            <i class="bi bi-tag-fill me-1 text-primary"></i>
+            {{ category.name }}
+          </td>
+          <td>{{ category.description|default:"—" }}</td>
+          <td>
+            <a href="{% url 'product_categories:category_update' category.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-danger"
+               onclick="confirmDelete('{{ category.name }}', '{% url 'product_categories:category_delete' category.pk %}')"
+               title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" class="text-center text-muted py-4">
+            <i class="bi bi-info-circle me-2"></i>No hay categorías registradas.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
+<!-- Estilos -->
+<style>
+  .table-header {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+</style>
+
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
+  // Inicializar tabla
+  $('#categoriesTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES'
+  });
+
+  // Confirmación eliminar
+  function confirmDelete(name, url) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará la categoría: "${name}".`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = url;
+      }
+    });
+  }
+
+  // Ocultar mensajes flash
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
       alert.classList.add('fade', 'show');
@@ -68,5 +118,4 @@
     });
   }, 2000);
 </script>
-
 {% endblock %}

@@ -10,7 +10,8 @@
     </h5>
   </div>
   <div class="card-body">
-    <select id="tripSelector" class="form-select w-50 mx-auto" data-base-url="{% url 'transport:stop_list' 9999 %}">
+    <select id="tripSelector" class="form-select w-50 mx-auto"
+            data-base-url="{% url 'transport:stop_list' 9999 %}">
       <option value="0" disabled selected>-- Selecciona un viaje --</option>
       {% for trip in trips %}
         <option value="{{ trip.id }}" {% if selected_trip_id == trip.id %}selected{% endif %}>
@@ -28,7 +29,7 @@
       <i class="bi bi-signpost-2-fill me-2"></i>
       Paradas del Viaje <span class="text-warning">{{ trip.code }}</span>
     </h5>
-    <a href="{% url 'transport:stop_create' trip.id %}" class="btn btn-light">
+    <a href="{% url 'transport:stop_create' trip.id %}" class="btn btn-light text-primary fw-semibold">
       <i class="bi bi-plus-circle"></i> Nueva Parada
     </a>
   </div>
@@ -41,17 +42,17 @@
     </div>
   {% endif %}
 
-  <div class="card-body p-0">
-    <table class="table table-striped mb-0 align-middle text-center">
-      <thead class="table-light">
+  <div class="card-body">
+    <table id="stopsTable" class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
         <tr>
-          <th>#</th>
-          <th>Cliente</th>
-          <th>Dirección</th>
-          <th>Planificado</th>
-          <th>Entregado</th>
-          <th>Estado</th>
-          <th>Acciones</th>
+          <th data-field="seq" data-sortable="true">#</th>
+          <th data-field="customer" data-sortable="true">Cliente</th>
+          <th data-field="address" data-sortable="true">Dirección</th>
+          <th data-field="planned" data-sortable="true">Planificado</th>
+          <th data-field="delivered" data-sortable="true">Entregado</th>
+          <th data-field="status" data-sortable="true">Estado</th>
+          <th data-field="actions">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -99,21 +100,48 @@
 </div>
 {% endif %}
 
+<!-- Estilos personalizados -->
+<style>
+  .table-header {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+</style>
+
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
-  const selector = document.getElementById('tripSelector');
-  selector.addEventListener('change', function () {
-    const selectedTripId = this.value;
-
-    if (!selectedTripId || selectedTripId === "0") return;
-
-    const urlTemplate = selector.dataset.baseUrl;
-    const newUrl = urlTemplate.replace("9999", selectedTripId);
-
-    window.location.href = newUrl;
+  // Inicializar tabla
+  $('#stopsTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES'
   });
-</script>
 
-<script>
+  // Redirección al seleccionar viaje
+  const selector = document.getElementById('tripSelector');
+  if (selector) {
+    selector.addEventListener('change', function () {
+      const selectedTripId = this.value;
+      if (!selectedTripId || selectedTripId === "0") return;
+      const urlTemplate = selector.dataset.baseUrl;
+      window.location.href = urlTemplate.replace("9999", selectedTripId);
+    });
+  }
+
+  // Confirmación eliminar
   function confirmDelete(cliente, url) {
     Swal.fire({
       title: '¿Estás seguro?',
@@ -130,9 +158,8 @@
       }
     });
   }
-</script>
 
-<script>
+  // Ocultar mensajes flash
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
       alert.classList.add('fade', 'show');
@@ -140,5 +167,4 @@
     });
   }, 2000);
 </script>
-
 {% endblock %}

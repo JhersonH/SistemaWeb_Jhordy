@@ -18,50 +18,101 @@
     </div>
   {% endif %}
 
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-0">
-      <table class="table table-striped mb-0 align-middle text-center">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Nombre</th>
-            <th scope="col">Origen</th>
-            <th scope="col">Destino</th>
-            <th scope="col">Distancia (km)</th>
-            <th scope="col">ETA (min)</th>
-            <th scope="col">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for route in routes %}
-          <tr>
-            <td>{{ route.name }}</td>
-            <td>{{ route.origin }}</td>
-            <td>{{ route.destination }}</td>
-            <td>{{ route.distance_km }}</td>
-            <td>{{ route.eta_minutes }}</td>
-            <td>
-              <a href="{% url 'transport:route_update' route.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <a href="{% url 'transport:route_delete' route.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                <i class="bi bi-trash3"></i>
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="6" class="text-center py-4 text-muted">
-              <i class="bi bi-info-circle"></i> No hay rutas registradas.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="card-body">
+    <table
+      id="routesTable"
+      class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
+        <tr>
+          <th data-field="name" data-sortable="true">Nombre</th>
+          <th data-field="origin" data-sortable="true">Origen</th>
+          <th data-field="destination" data-sortable="true">Destino</th>
+          <th data-field="distance" data-sortable="true">Distancia (km)</th>
+          <th data-field="eta" data-sortable="true">ETA (min)</th>
+          <th data-field="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for route in routes %}
+        <tr>
+          <td>{{ route.name }}</td>
+          <td>{{ route.origin }}</td>
+          <td>{{ route.destination }}</td>
+          <td>{{ route.distance_km }}</td>
+          <td>{{ route.eta_minutes }}</td>
+          <td>
+            <a href="{% url 'transport:route_update' route.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{% url 'transport:route_delete' route.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+              <i class="bi bi-trash3"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">
+            <i class="bi bi-info-circle"></i> No hay rutas registradas.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
+<!-- Estilos personalizados -->
+<style>
+  /* Encabezado */
+  .table-header {
+    background-color: #0d6efd; /* Azul Bootstrap */
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Hover filas */
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+
+  /* Buscador */
+  .bootstrap-table .search input {
+    border-radius: 6px;
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+  }
+
+  /* Paginación */
+  .bootstrap-table .pagination .page-link {
+    border-radius: 50%;
+    margin: 0 2px;
+    color: #0d6efd;
+  }
+  .bootstrap-table .pagination .active .page-link {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+  }
+</style>
+
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
+  $('#routesTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES' // 👈 idioma en español
+  });
+
+  // Ocultar mensajes flash después de 2s
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
       alert.classList.add('fade', 'show');
@@ -69,5 +120,4 @@
     });
   }, 2000);
 </script>
-
 {% endblock %}

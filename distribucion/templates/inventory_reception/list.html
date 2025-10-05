@@ -20,62 +20,110 @@
     </div>
   {% endif %}
 
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-0">
-      {% if receptions %}
-      <table class="table table-striped align-middle text-center mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Fecha</th>
-            <th>Recibido por</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for reception in receptions %}
-          <tr>
-            <td class="fw-bold">
-              <i class="bi bi-box me-1 text-primary"></i>
-              {{ reception.product.name }}
-            </td>
-            <td>{{ reception.quantity_received }}</td>
-            <td>
-              <span class="badge bg-light text-muted">
-                {{ reception.reception_date|date:"d/m/Y" }}
-              </span>
-            </td>
-            <td>
-              <i class="bi bi-person-circle me-1 text-secondary"></i>
-              {% if reception.receiver %}
-                {{ reception.receiver.get_full_name|default:reception.receiver.username }}
-              {% else %}
-                —
-              {% endif %}
-            </td>
-            <td>
-              <a href="{% url 'inventory_receiving:reception_update' reception.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <a href="{% url 'inventory_receiving:reception_delete' reception.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                <i class="bi bi-trash"></i>
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      <div class="p-4 text-center text-muted">
-        <i class="bi bi-info-circle me-2"></i>No hay registros de recepción por ahora.
-      </div>
-      {% endif %}
-    </div>
+  <div class="card-body">
+    <table id="receptionsTable" class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
+        <tr>
+          <th data-field="product" data-sortable="true">Producto</th>
+          <th data-field="quantity" data-sortable="true">Cantidad</th>
+          <th data-field="date" data-sortable="true">Fecha</th>
+          <th data-field="receiver" data-sortable="true">Recibido por</th>
+          <th data-field="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reception in receptions %}
+        <tr>
+          <td class="fw-bold text-primary">
+            <i class="bi bi-box me-1"></i>{{ reception.product.name }}
+          </td>
+          <td><span class="badge bg-light text-dark">{{ reception.quantity_received }}</span></td>
+          <td>
+            <span class="badge bg-light text-muted">
+              <i class="bi bi-calendar-event me-1"></i>{{ reception.reception_date|date:"d/m/Y" }}
+            </span>
+          </td>
+          <td>
+            <i class="bi bi-person-circle me-1 text-secondary"></i>
+            {% if reception.receiver %}
+              {{ reception.receiver.get_full_name|default:reception.receiver.username }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'inventory_receiving:reception_update' reception.pk %}"
+               class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-danger"
+               onclick="confirmDelete('{{ reception.product.name }}', '{% url 'inventory_receiving:reception_delete' reception.pk %}')"
+               title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            <i class="bi bi-info-circle me-2"></i>No hay registros de recepción por ahora.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
+<!-- Estilos -->
+<style>
+  .table-header {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+</style>
+
+<!-- Idioma español para la tabla -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
+  // Inicializar tabla
+  $('#receptionsTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES'
+  });
+
+  // Confirmación al eliminar
+  function confirmDelete(producto, url) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará la recepción del producto: "${producto}".`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = url;
+      }
+    });
+  }
+
+  // Ocultar mensajes flash
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
       alert.classList.add('fade', 'show');
@@ -83,5 +131,4 @@
     });
   }, 2000);
 </script>
-
 {% endblock %}

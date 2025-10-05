@@ -6,212 +6,508 @@
 
 {% block inner_content %}
 <div class="p-6 space-y-6">
-  <!-- Distribución en 2 columnas -->
   <div class="flex flex-col xl:grid xl:grid-cols-3 gap-6">
 
-    <!-- Donut sola (1 columna) -->
+    <!-- Tarjeta 1 -->
     <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow h-full xl:col-span-1">
       <div class="flex flex-col items-center justify-center text-center mb-4">
         <div class="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3a1 1 0 011 1v8h8a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1h7z" />
           </svg>
-          <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Almacén por Área" %}</h2>
+          <h2 class="text-lg font-semibold text-black dark:text-white">
+            {% if request.user.is_superuser %}
+              {% trans "Resumen General de Operaciones" %}
+            {% elif debug_role == "Control de Inventario" %}
+              {% trans "Top productos con ajustes" %}
+            {% elif debug_role == "Jefe de Almacén" or debug_role == "Operario de Almacén" %}
+              {% trans "Stock por Ubicación" %}
+            {% elif debug_role == "Despachador" %}
+              {% trans "Viajes por Estado" %}
+            {% elif debug_role == "Conductor" %}
+              {% trans "Mis Viajes (Indicadores)" %}
+            {% elif debug_role == "Consulta / Solo Lectura" %}
+              {% trans "Stock por Categoría" %}
+            {% else %}
+              {% trans "Vehículos por Estado" %}
+            {% endif %}
+          </h2>
         </div>
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          {% trans "Distribución por almacén" %}
+          {% if request.user.is_superuser %}
+            {% trans "Indicadores globales de stock, viajes y vehículos" %}
+          {% elif debug_role == "Control de Inventario" %}
+            {% trans "Productos con mayor cantidad de ajustes" %}
+          {% elif debug_role == "Jefe de Almacén" %}
+            {% trans "Distribución del stock en ubicaciones" %}
+          {% elif debug_role == "Operario de Almacén" %}
+            {% trans "Stock actual por ubicación" %}
+          {% elif debug_role == "Despachador" %}
+            {% trans "Cantidad de viajes según estado" %}
+          {% elif debug_role == "Conductor" %}
+            {% trans "Resumen de mis viajes asignados" %}
+          {% elif debug_role == "Consulta / Solo Lectura" %}
+            {% trans "Distribución del stock por categoría de producto" %}
+          {% else %}
+            {% trans "Cantidad de vehículos según estado" %}
+          {% endif %}
         </p>
       </div>
-      <canvas id="coursesByLevelChart" class="w-full h-72"></canvas>
+
+      {% if debug_role == "Conductor" %}
+        <!-- Indicadores rápidos Conductor -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <!-- Total -->
+          <div class="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18"/>
+              </svg>
+              <p class="text-sm font-medium">{% trans "Total" %}</p>
+            </div>
+            <h3 class="text-3xl font-bold">{{ total_trips }}</h3>
+          </div>
+
+          <!-- Planificados -->
+          <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 text-white p-4 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <p class="text-sm font-medium">{% trans "Planificados" %}</p>
+            </div>
+            <h3 class="text-3xl font-bold">{{ planned_trips }}</h3>
+          </div>
+
+          <!-- En Curso -->
+          <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z"/>
+              </svg>
+              <p class="text-sm font-medium">{% trans "En Curso" %}</p>
+            </div>
+            <h3 class="text-3xl font-bold">{{ in_progress_trips }}</h3>
+          </div>
+
+          <!-- Completados -->
+          <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2l4-4"/>
+              </svg>
+              <p class="text-sm font-medium">{% trans "Completados" %}</p>
+            </div>
+            <h3 class="text-3xl font-bold">{{ completed_trips }}</h3>
+          </div>
+
+          <!-- Cancelados -->
+          <div class="bg-gradient-to-r from-red-500 to-pink-600 text-white p-4 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+              <p class="text-sm font-medium">{% trans "Cancelados" %}</p>
+            </div>
+            <h3 class="text-3xl font-bold">{{ cancelled_trips }}</h3>
+          </div>
+        </div>
+      {% else %}
+        <canvas id="coursesByLevelChart" class="w-full h-72"></canvas>
+      {% endif %}
     </div>
 
-    <!-- Gráficos agrupados (2 columnas) -->
+    <!-- Tarjetas agrupadas -->
     <div class="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <!-- Documentos por Tipo -->
+      <!-- Tarjeta 2 -->
       <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
         <div class="flex flex-col items-center justify-center text-center mb-4">
           <div class="flex items-center justify-center gap-2 text-purple-600 dark:text-purple-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m2 6H7a2 2 0 01-2-2V6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v10a2 2 0 01-2 2z" />
             </svg>
-            <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Productos por Categoría" %}</h2>
+            <h2 class="text-lg font-semibold text-black dark:text-white">
+              {% if request.user.is_superuser %}
+                {% trans "Stock vs. Alertas de Mínimo" %}
+              {% elif debug_role == "Control de Inventario" %}
+                {% trans "Ajustes de Inventario por Mes" %}
+              {% elif debug_role == "Jefe de Almacén" %}
+                {% trans "Alertas de Stock Mínimo" %}
+              {% elif debug_role == "Despachador" %}
+                {% trans "Conductores activos / inactivos" %}
+              {% elif debug_role == "Conductor" %}
+                {% trans "Últimos Destinos" %}
+              {% elif debug_role == "Consulta / Solo Lectura" %}
+                {% trans "Envíos por Semana" %}
+              {% else %}
+                {% trans "Productos por Categoría" %}
+              {% endif %}
+            </h2>
           </div>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            {% trans "Cantidad de productos por categoría" %}
+            {% if request.user.is_superuser %}
+              {% trans "Comparativa entre stock actual y alertas de stock mínimo" %}
+            {% elif debug_role == "Control de Inventario" %}
+              {% trans "Comparativa de ajustes mensuales" %}
+            {% elif debug_role == "Jefe de Almacén" %}
+              {% trans "Productos con stock crítico" %}
+            {% elif debug_role == "Despachador" %}
+              {% trans "Indicador de disponibilidad de conductores" %}
+            {% elif debug_role == "Conductor" %}
+              {% trans "Mis últimos viajes registrados" %}
+            {% elif debug_role == "Consulta / Solo Lectura" %}
+              {% trans "Cantidad de envíos realizados por semana" %}
+            {% else %}
+              {% trans "Cantidad de productos por categoría" %}
+            {% endif %}
           </p>
         </div>
-        <canvas id="documentsByTypeChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+
+        {% if debug_role == "Conductor" %}
+          <!-- Lista de últimos destinos -->
+          <ul class="list-disc list-inside text-left text-sm text-gray-700 dark:text-gray-300">
+            {% for d in destinations %}
+              <li>{{ d }}</li>
+            {% empty %}
+              <li>{% trans "No hay destinos recientes." %}</li>
+            {% endfor %}
+          </ul>
+
+        {% elif debug_role == "Despachador" %}
+          <!-- Indicador rápido Despachador -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 p-4 rounded-xl text-center">
+              <p class="text-sm">{% trans "Activos" %}</p>
+              <h3 class="text-2xl font-bold">{{ active_drivers }}</h3>
+            </div>
+            <div class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 p-4 rounded-xl text-center">
+              <p class="text-sm">{% trans "Inactivos" %}</p>
+              <h3 class="text-2xl font-bold">{{ inactive_drivers }}</h3>
+            </div>
+          </div>
+
+        {% else %}
+          <canvas id="documentsByTypeChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+        {% endif %}
       </div>
 
-      <!-- Clases por Día -->
+      <!-- Tarjeta 3 -->
       <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
         <div class="flex flex-col items-center justify-center text-center mb-4">
           <div class="flex items-center justify-center gap-2 text-orange-500 dark:text-orange-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7H3v12a2 2 0 01-2 2z"/>
             </svg>
-            <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Número de Envíos" %}</h2>
+            <h2 class="text-lg font-semibold text-black dark:text-white">
+              {% if request.user.is_superuser %}
+                {% trans "Viajes y Transporte por Día" %}
+              {% elif debug_role == "Control de Inventario" %}
+                {% trans "Kardex por tipo de movimiento" %}
+              {% elif debug_role == "Jefe de Almacén" %}
+                {% trans "Movimientos de Salida" %}
+              {% elif debug_role == "Despachador" %}
+                {% trans "Viajes por Día (últimos 7 días)" %}
+              {% elif debug_role == "Conductor" %}
+                {% trans "Productos más entregados" %}
+              {% elif debug_role == "Consulta / Solo Lectura" %}
+                {% trans "Productos más rotados" %}
+              {% else %}
+                {% trans "Envíos por Día" %}
+              {% endif %}
+            </h2>
           </div>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            {% trans "Cantidad de envíos en la semana" %}
+            {% if request.user.is_superuser %}
+              {% trans "Resumen diario de viajes y transportes" %}
+            {% elif debug_role == "Control de Inventario" %}
+              {% trans "Conteo de Entradas, Salidas y Ajustes (últimos 20)" %}
+            {% elif debug_role == "Jefe de Almacén" %}
+              {% trans "Salidas por día en la última semana" %}
+            {% elif debug_role == "Despachador" %}
+              {% trans "Tendencia de viajes en la última semana" %}
+            {% elif debug_role == "Conductor" %}
+              {% trans "Ranking de mis productos entregados" %}
+            {% elif debug_role == "Consulta / Solo Lectura" %}
+              {% trans "Ranking de productos con mayor rotación" %}
+            {% else %}
+              {% trans "Cantidad de envíos realizados" %}
+            {% endif %}
           </p>
         </div>
-        <canvas id="weeklyScheduleChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+
+        {% if debug_role == "Conductor" %}
+          <canvas id="topProductsChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+        {% else %}
+          <canvas id="weeklyScheduleChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+        {% endif %}
       </div>
 
-      <!-- Horas por Día -->
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
+      <!-- Tarjeta 4 (oculta para Control, Despachador y Conductor) -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow {% if debug_role == 'Control de Inventario' or debug_role == 'Despachador' or debug_role == 'Conductor' or debug_role == 'Consulta / Solo Lectura' %}hidden{% endif %}">
         <div class="flex flex-col items-center justify-center text-center mb-4">
           <div class="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 6v6l4 2M12 4a8 8 0 100 16 8 8 0 000-16z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2M12 4a8 8 0 100 16 8 8 0 000-16z" />
             </svg>
-            <h2 class="text-lg font-semibold text-black dark:text-white">{% trans "Transportes" %}</h2>
+            <h2 class="text-lg font-semibold text-black dark:text-white">
+              {% if debug_role == "Jefe de Almacén" %}
+                {% trans "Movimientos de Entrada" %}
+              {% elif debug_role == "Operario de Almacén" %}
+                {% trans "Top 5 productos más movidos" %}
+              {% else %}
+                {% trans "Transportes por Día" %}
+              {% endif %}
+            </h2>
           </div>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            {% trans "Cantidad de Transportes" %}
+            {% if debug_role == "Jefe de Almacén" %}
+              {% trans "Entradas por día en la última semana" %}
+            {% elif debug_role == "Operario de Almacén" %}
+              {% trans "Ranking de productos por movimientos" %}
+            {% else %}
+              {% trans "Cantidad de transportes por día" %}
+            {% endif %}
           </p>
         </div>
-        <canvas id="hoursPerDayChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+        <canvas id="{% if debug_role == 'Operario de Almacén' %}topProductsChart{% else %}hoursPerDayChart{% endif %}" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
       </div>
 
-      <!-- Espacio futuro para otro gráfico (o déjalo vacío por ahora) -->
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow flex items-center justify-center text-gray-400 dark:text-gray-500">
+      <!-- Historial Kardex (solo Control de Inventario) -->
+      {% if debug_role == "Control de Inventario" %}
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow md:col-span-2">
+        <h2 class="text-lg font-semibold text-black dark:text-white mb-2">
+          {% trans "Historial Kardex" %}
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          {% trans "Últimos 20 movimientos registrados" %}
+        </p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm text-left border">
+            <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+              <tr>
+                <th class="px-4 py-2">{% trans "Fecha" %}</th>
+                <th class="px-4 py-2">{% trans "Producto" %}</th>
+                <th class="px-4 py-2">{% trans "Ubicación" %}</th>
+                <th class="px-4 py-2">{% trans "Tipo" %}</th>
+                <th class="px-4 py-2">{% trans "Cantidad" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for move in kardex %}
+              <tr class="border-b">
+                <td class="px-4 py-2">{{ move.date|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-2">{{ move.product.name }}</td>
+                <td class="px-4 py-2">{{ move.location.name }}</td>
+                <td class="px-4 py-2 capitalize">{{ move.get_movement_type_display }}</td>
+                <td class="px-4 py-2">{{ move.quantity }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="px-4 py-2 text-center text-gray-500">
+                  {% trans "No hay movimientos registrados." %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if request.user.is_superuser %}
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
+        <div class="flex flex-col items-center justify-center text-center mb-4">
+          <div class="flex items-center justify-center gap-2 text-pink-600 dark:text-pink-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0V10m0 10H7" />
+            </svg>
+            <h2 class="text-lg font-semibold text-black dark:text-white">
+              {% trans "Usuarios por Rol" %}
+            </h2>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {% trans "Distribución de usuarios en el sistema" %}
+          </p>
+        </div>
+        <canvas id="usersByRoleChart" class="w-full h-[300px] md:h-[250px] xl:h-[220px]"></canvas>
+      </div>
+      {% endif %}
+
+      <!-- Futuro -->
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow flex items-center justify-center text-gray-400 dark:text-gray-500 md:col-span-2">
         <span>{% trans "Próximamente más métricas..." %}</span>
       </div>
-
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+{# =================== JSON DATA =================== #}
+{{ courses_levels_labels|json_script:"coursesLevelsLabels" }}
+{{ courses_levels_data|json_script:"coursesLevelsData" }}
+{{ documents_types_labels|json_script:"documentsTypesLabels" }}
+{{ documents_types_data|json_script:"documentsTypesData" }}
+{{ stock_min_data|json_script:"stockMinData" }}
+{{ schedules_labels|json_script:"schedulesLabels" }}
+{{ schedules_data|json_script:"schedulesData" }}
+{{ hours_per_day_data|json_script:"hoursPerDayData" }}
+{{ top_products_labels|json_script:"topProductsLabels" }}
+{{ top_products_data|json_script:"topProductsData" }}
+{{ hours_per_day_labels|json_script:"hoursPerDayLabels" }}
+{{ hours_per_day_data|json_script:"hoursPerDayData" }}
+{{ users_labels|json_script:"usersLabels" }}
+{{ users_data|json_script:"usersData" }}
+
+{% if debug_role == "Control de Inventario" %}
+<script id="kardexData" type="application/json">[
+  {% for m in kardex %}
+    {"type":"{{ m.movement_type }}","date":"{{ m.date|date:'Y-m-d' }}","qty": {{ m.quantity|default:0 }} }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+]</script>
+{% endif %}
+
 <script>
-  let initialWidth = window.innerWidth;
-  window.addEventListener('resize', () => {
-    const newWidth = window.innerWidth;
-    const threshold = 768; // límite entre móvil y desktop
+  const ROLE = "{{ debug_role|default:'' }}";
 
-    const crossedThreshold =
-      (initialWidth < threshold && newWidth >= threshold) ||
-      (initialWidth >= threshold && newWidth < threshold);
+  function J(id, fb){ const el = document.getElementById(id); if(!el) return fb; try{ return JSON.parse(el.textContent); }catch(e){ return fb; } }
 
-    if (crossedThreshold) {
-      location.reload();
+  const topProductsLabels   = J("topProductsLabels", []);
+  const topProductsData     = J("topProductsData", []);
+  const coursesLevelsLabels = J("coursesLevelsLabels", []);
+  const coursesLevelsData   = J("coursesLevelsData", []);
+  const documentsTypesLabels= J("documentsTypesLabels", []);
+  const documentsTypesData  = J("documentsTypesData", []);
+  const stockMinData        = J("stockMinData", []);
+  const schedulesLabels     = J("schedulesLabels", []);
+  const schedulesData       = J("schedulesData", []);
+  const hoursPerDayData     = J("hoursPerDayData", []);
+
+  // ===== Tarjeta 1 =====
+  (function(){
+    const el = document.getElementById('coursesByLevelChart');
+    if (!el) return;
+
+    if (ROLE === "Administrador" || "{{ request.user.is_superuser }}" === "True") {
+      new Chart(el, { type:'doughnut', data:{ labels:coursesLevelsLabels.length?coursesLevelsLabels:['Sin datos'], datasets:[{ data:coursesLevelsData.length?coursesLevelsData:[1], backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } });
+      return;
     }
-  });
+
+    if (ROLE === "Despachador") {
+      new Chart(el, { type:'bar', data:{ labels:coursesLevelsLabels.length?coursesLevelsLabels:['Sin datos'], datasets:[{ label:'Viajes', data:coursesLevelsData.length?coursesLevelsData:[1], backgroundColor:'#3b82f6' }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+      return;
+    }
+
+    if (ROLE === "Control de Inventario") {
+      new Chart(el, { type:'doughnut', data:{ labels:topProductsLabels.length?topProductsLabels:['Sin datos'], datasets:[{ data:topProductsData.length?topProductsData:[1], backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } });
+      return;
+    }
+
+    if (ROLE === "Consulta / Solo Lectura") {
+      new Chart(el, { type:'doughnut', data:{ labels:coursesLevelsLabels.length?coursesLevelsLabels:['Sin datos'], datasets:[{ data:coursesLevelsData.length?coursesLevelsData:[1], backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'] }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } });
+      return;
+    }
+
+    // Default
+    new Chart(el, { type:'doughnut', data:{ labels:coursesLevelsLabels.length?coursesLevelsLabels:['Sin datos'], datasets:[{ data:coursesLevelsData.length?coursesLevelsData:[1], backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } });
+  })();
+
+  // ===== Tarjeta 2 =====
+  (function(){
+    const el = document.getElementById('documentsByTypeChart');
+    if (!el) return;
+
+    if (ROLE === "Administrador" || "{{ request.user.is_superuser }}" === "True") {
+      new Chart(el, { type:'bar', data:{ labels:documentsTypesLabels.length?documentsTypesLabels:['Stock','Alertas'], datasets:[{ label:'Unidades', data:documentsTypesData.length?documentsTypesData:[0,0], backgroundColor:['#6366f1','#ef4444'] }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+      return;
+    }
+
+    if (ROLE === "Control de Inventario") {
+      new Chart(el, { type:'bar', data:{ labels:schedulesLabels.length?schedulesLabels:['Sin datos'], datasets:[{ label:'Ajustes', data:schedulesData.length?schedulesData:[1], backgroundColor:'#f59e0b' }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+      return;
+    }
+
+    if (ROLE === "Consulta / Solo Lectura") {
+      new Chart(el, { type:'bar', data:{ labels:schedulesLabels.length?schedulesLabels:['Sin datos'], datasets:[{ label:'Envíos', data:schedulesData.length?schedulesData:[1], backgroundColor:'#6366f1' }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+      return;
+    }
+
+    // Default
+    const hasA = documentsTypesData.length>0;
+    const hasB = stockMinData.length>0;
+    new Chart(el, { type:'bar', data:{ labels:(hasA||hasB)?documentsTypesLabels:['Sin datos'], datasets:[ { label:'Stock Actual', data:hasA?documentsTypesData:[1], backgroundColor:hasA?'#ec4899':'#cccccc' }, { label:'Stock Mínimo', data:hasB?stockMinData:[0], backgroundColor:hasB?'#60a5fa':'#e5e7eb' } ] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } }, plugins:{ legend:{ position:'top' } } } });
+  })();
+
+  // ===== Tarjeta 3 =====
+  (function(){
+    const el = document.getElementById('weeklyScheduleChart');
+    if (!el) return;
+
+    if (ROLE === "Administrador" || "{{ request.user.is_superuser }}" === "True") {
+      new Chart(el, { type:'line', data:{ labels:schedulesLabels.length?schedulesLabels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], datasets:[{ label:'Viajes', data:schedulesData.length?schedulesData:[0,0,0,0,0,0,0], borderColor:'#f97316', backgroundColor:'rgba(249,115,22,0.2)', fill:true, tension:0.3 }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+      return;
+    }
+
+    if (ROLE === "Despachador") {
+      new Chart(el, { type:'line', data:{ labels:schedulesLabels.length?schedulesLabels:['Sin datos'], datasets:[{ label:'Viajes', data:schedulesData.length?schedulesData:[1], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.2)', tension:.35, fill:true }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+      return;
+    }
+
+    if (ROLE === "Control de Inventario") {
+      const kd = J('kardexData', []);
+      const c = { input:0, output:0, adjustment:0 };
+      kd.forEach(i => { if(c[i.type] !== undefined) c[i.type]++; });
+      const data = [c.input, c.output, c.adjustment];
+      const any = data.some(v=>v>0);
+      new Chart(el, { type:'bar', data:{ labels:any?['Entradas','Salidas','Ajustes']:['Sin datos'], datasets:[{ label:'Movimientos', data:any?data:[1], backgroundColor:any?['#22c55e','#ef4444','#8b5cf6']:['#cccccc'] }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+      return;
+    }
+
+    if (ROLE === "Consulta / Solo Lectura") {
+      new Chart(el, { type:'bar', data:{ labels:topProductsLabels.length?topProductsLabels:['Sin datos'], datasets:[{ label:'Rotación', data:topProductsData.length?topProductsData:[1], backgroundColor:'#f97316' }] }, options:{ responsive:true, indexAxis:'y', scales:{ x:{ beginAtZero:true } } } });
+      return;
+    }
+
+    // Default
+    new Chart(el, { type:'bar', data:{ labels:schedulesLabels.length?schedulesLabels:['Sin datos'], datasets:[{ label:'Total', data:schedulesData.length?schedulesData:[1], backgroundColor:['#f97316','#22c55e','#3b82f6','#8b5cf6','#ef4444'] }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+  })();
+
+  // ===== Top productos =====
+  (function(){
+    const el = document.getElementById('topProductsChart');
+    if (!el) return;
+    new Chart(el, { type:'bar', data:{ labels:topProductsLabels.length?topProductsLabels:['Sin datos'], datasets:[{ label:'Total movido', data:topProductsData.length?topProductsData:[1], backgroundColor:'#22c55e', borderColor:'#15803d', borderWidth:1 }] }, options:{ responsive:true, scales:{ y:{ beginAtZero:true } }, plugins:{ legend:{ position:'top' } } } });
+  })();
+
+  // ===== Tarjeta 4 =====
+  (function(){
+    if (ROLE === "Control de Inventario" || ROLE === "Despachador" || ROLE === "Conductor") return;
+    const el = document.getElementById('hoursPerDayChart');
+    if (!el) return;
+
+    new Chart(el, {
+      type: 'bar',
+      data: {
+        labels: J("hoursPerDayLabels", []),
+        datasets: [{
+          label:'Viajes',
+          data: J("hoursPerDayData", []),
+          backgroundColor:['#22c55e','#3b82f6','#f59e0b','#ef4444']
+        }]
+      },
+      options: { responsive:true, scales:{ y:{ beginAtZero:true } } }
+    });
+  })();
+
+  // ===== Usuarios por Rol =====
+  (function(){
+    const usersLabels = J("usersLabels", []);
+    const usersData   = J("usersData", []);
+    const el = document.getElementById('usersByRoleChart');
+    if (!el) return;
+    new Chart(el, { type:'doughnut', data:{ labels:usersLabels.length?usersLabels:['Sin datos'], datasets:[{ data:usersData.length?usersData:[1], backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899'] }] }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } });
+  })();
 </script>
 
-<script>
-  const coursesByLevelCtx = document.getElementById('coursesByLevelChart').getContext('2d');
-  const documentsByTypeCtx = document.getElementById('documentsByTypeChart').getContext('2d');
-  const weeklyScheduleCtx = document.getElementById('weeklyScheduleChart').getContext('2d');
-
-  new Chart(coursesByLevelCtx, {
-    type: 'doughnut',
-    data: {
-      labels: {{ courses_levels_labels|safe }},
-      datasets: [{
-        data: {{ courses_levels_data|safe }},
-        backgroundColor: ['#3b82f6', '#10b981'],
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' }
-      }
-    }
-  });
-
-  new Chart(documentsByTypeCtx, {
-    type: 'bar',
-    data: {
-      labels: {{ documents_types_labels|safe }},
-      datasets: [{
-        label: 'Cantidad',
-        data: {{ documents_types_data|safe }},
-        backgroundColor: [
-          '#6366f1',  // Evaluación - Indigo
-          '#ec4899',  // Material - Rosado fuerte
-          '#14b8a6'   // Reporte - Cian oscuro
-        ],
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true }
-      },
-      plugins: {
-        legend: { position: 'top' }
-      }
-    }
-  });
-
-  new Chart(weeklyScheduleCtx, {
-    type: 'bar',
-    data: {
-      labels: {{ schedules_labels|safe }},
-      datasets: [{
-        label: 'Clases',
-        data: {{ schedules_data|safe }},
-        backgroundColor: [
-          '#f97316',  // lunes - azul
-          '#22c55e',  // martes - verde
-          '#3b82f6',  // miércoles - naranja
-          '#8b5cf6',  // jueves - púrpura
-          '#ef4444'   // viernes - rojo
-        ],
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true }
-      }
-    }
-  });
-
-  // Horas totales por día
-  new Chart(document.getElementById('hoursPerDayChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: {{ schedules_labels|safe }},
-      datasets: [{
-        label: 'Horas Totales',
-        data: {{ hours_per_day_data|safe }},
-        borderColor: '#22c55e',
-        backgroundColor: '#bbf7d0',
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: '#16a34a'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const totalMin = context.raw;
-              const h = Math.floor(totalMin / 60);
-              const m = totalMin % 60;
-              return `${h}h ${m}m`;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: { display: true, text: 'Horas' }
-        }
-      }
-    }
-  });
-</script>
 {% endblock %}

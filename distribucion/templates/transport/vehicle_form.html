@@ -134,6 +134,7 @@
   });
 </script>
 
+<!-- jQuery y Select2 -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Marca (autocomplete + focus on open)
@@ -197,8 +198,79 @@
     $('#id_brand').on('change', function () {
       $('#id_model').val(null).trigger('change');
     });
+
+    // 🔧 AUTOCOMPLETADO POR PLACA (sin alertas, con manejo correcto de select)
+    const placaInput = document.getElementById('id_plate');
+    if (placaInput) {
+      placaInput.addEventListener('blur', function() {
+        const placa = this.value.trim().toUpperCase();
+        if (!placa) return;
+
+        fetch(`{% url 'transport:ajax_load_vehicle_data' %}?placa=${encodeURIComponent(placa)}`)
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else if (response.status === 404) {
+              // No hacer nada si no se encuentra la placa
+              return null;
+            } else {
+              throw new Error("Error en la respuesta del servidor.");
+            }
+          })
+          .then(data => {
+            if (data) {
+              // Llenar campos normales
+              document.getElementById('id_year').value = data.anio || '';
+              document.getElementById('id_capacity_kg').value = data.capacidad_kg || 0;
+              document.getElementById('id_volume_m3').value = data.volumen_m3 || 0;
+              document.getElementById('id_odometer_km').value = data.odometro_km || 0;
+
+              // Llenar Select2 (marca y modelo)
+              if (data.marca) {
+                const brandSelect = $('#id_brand');
+                // Limpiar selección previa
+                brandSelect.val(null).trigger('change');
+                // Crear nueva opción si no existe
+                const brandOption = new Option(data.marca, data.marca, true, true);
+                brandSelect.append(brandOption).trigger('change');
+              }
+
+              if (data.modelo) {
+                const modelSelect = $('#id_model');
+                modelSelect.val(null).trigger('change');
+                const modelOption = new Option(data.modelo, data.modelo, true, true);
+                modelSelect.append(modelOption).trigger('change');
+              }
+
+              // ✅ LLENAR EL SELECT DE ESTADO CORRECTAMENTE
+              if (data.estado) {
+                const statusSelect = document.getElementById('id_status');
+                // Buscar la opción que coincide con el valor
+                for (let i = 0; i < statusSelect.options.length; i++) {
+                  if (statusSelect.options[i].value === data.estado) {
+                    statusSelect.selectedIndex = i;
+                    break;
+                  }
+                }
+              }
+            } else {
+              document.getElementById('id_year').value = '';
+              document.getElementById('id_capacity_kg').value = 0;
+              document.getElementById('id_volume_m3').value = 0;
+              document.getElementById('id_odometer_km').value = 0;
+              document.getElementById('id_status').selectedIndex = 0; // Primera opción (por defecto)
+              $('#id_brand').val(null).trigger('change');
+              $('#id_model').val(null).trigger('change');
+            }
+          })
+          .catch(error => {
+            console.error("Error al cargar datos del vehículo:", error);
+            // Opcional: mostrar mensaje discreto en consola o en UI
+          });
+      });
+    }
+
   });
 </script>
-
 
 {% endblock %}

@@ -12,6 +12,10 @@ from .forms import UserCreateForm, UserUpdateForm, ProfileForm, AdminSetPassword
 from .models import Profile
 from roles.models import Role
 
+import json
+import os
+from django.conf import settings
+
 # Solo usuarios con rol de administrador (superuser o staff) pueden acceder
 def _staff_or_super(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
@@ -22,22 +26,10 @@ staff_required = user_passes_test(_staff_or_super, login_url='login')
 @login_required
 @staff_required
 def user_list(request):
-    q = request.GET.get("q", "").strip()
-    role_id = request.GET.get("role", "").strip()
-
-    users = User.objects.all().select_related("profile__role")
+    users = User.objects.select_related("profile__role").all()
     roles = Role.objects.all()
-
-    if q:
-        users = users.filter(username__icontains=q)
-    if role_id:
-        users = users.filter(profile__role_id=role_id)
-
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        html = render_to_string("users/_user_table.html", {"users": users}, request=request)
-        return JsonResponse({"html": html})
-
     return render(request, "users/list.html", {"users": users, "roles": roles})
+
 
 @login_required
 @staff_required
@@ -49,9 +41,19 @@ def user_create(request):
         if uform.is_valid() and pform.is_valid():
             user = uform.save()
             profile, _ = Profile.objects.get_or_create(user=user)
-            for f in ("role", "doc_id", "phone", "avatar"):
-                setattr(profile, f, pform.cleaned_data.get(f))
+
+            # ✅ Guardar todos los campos del ProfileForm
+            profile.role = pform.cleaned_data.get("role")
+            profile.doc_id = pform.cleaned_data.get("doc_id")
+            profile.phone = pform.cleaned_data.get("phone")
+            profile.avatar = pform.cleaned_data.get("avatar")
+            profile.birth_date = pform.cleaned_data.get("birth_date")
+            profile.address = pform.cleaned_data.get("address")
+            profile.hire_date = pform.cleaned_data.get("hire_date")
+            profile.position = pform.cleaned_data.get("position")
+
             profile.save()
+
             messages.success(request, "Usuario creado correctamente.")
             return redirect("users:list")
     else:
@@ -129,31 +131,19 @@ def user_reset_password(request, pk):
 @login_required
 @staff_required
 def employee_list(request):
-    q = request.GET.get("q", "").strip()
-    role_id = request.GET.get("role", "").strip()
-
-    # Excluye usuarios superusuarios o staff
-    employees = Profile.objects.select_related("user", "role") \
-        .exclude(user__is_superuser=True) \
+    # Excluye superusuarios y staff
+    employees = (
+        Profile.objects
+        .select_related("user", "role")
+        .exclude(user__is_superuser=True)
         .exclude(user__is_staff=True)
+        .order_by("user__username")
+    )
 
     roles = Role.objects.all()
 
-    if q:
-        employees = employees.filter(user__first_name__icontains=q)
-    if role_id:
-        employees = employees.filter(role_id=role_id)
-
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        html = render_to_string(
-            "users/_employee_table.html",
-            {"employees": employees},  # 👈 MISMO NOMBRE
-            request=request
-        )
-        return JsonResponse({"html": html})
-
     return render(request, "users/employee_list.html", {
-        "employees": employees,  # 👈 MISMO NOMBRE
+        "employees": employees,
         "roles": roles,
     })
 
@@ -215,3 +205,81 @@ def profile_update(request):
         "profile_form": profile_form,
         "title": "Mi perfil"
     })
+
+@login_required
+def load_user_data_by_dni(request):
+    """
+    Vista que devuelve datos del usuario por DNI/RUC.
+    Útil para autocompletado basado en DNI.
+    """
+    json_path = os.path.join(settings.BASE_DIR, 'users', 'user_api.json')
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return JsonResponse({"error": "Archivo user_api.json no encontrado."}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Error al leer el archivo JSON."}, status=500)
+
+    dni = request.GET.get("dni", "").strip()
+    if dni:
+        user_data = data.get(dni)
+        if user_data:
+            return JsonResponse(user_data)
+        else:
+            return JsonResponse({"error": "DNI no encontrado en la base de datos."}, status=404)
+
+    return JsonResponse(data)
+
+@login_required
+def save_profile_data_by_dni(request):
+    """
+    Vista que recibe DNI y datos de Profile, y los guarda en la base de datos.
+    """
+    if request.method != 'POST':
+        return JsonResponse({"error": "Método no permitido."}, status=405)
+
+    dni = request.POST.get("dni", "").strip()
+    first_name = request.POST.get("first_name", "").strip()
+    last_name = request.POST.get("last_name", "").strip()
+    email = request.POST.get("email", "").strip()
+    username = request.POST.get("username", "").strip()
+    phone = request.POST.get("phone", "").strip()
+    birth_date = request.POST.get("birth_date", "").strip()
+    address = request.POST.get("address", "").strip()
+    hire_date = request.POST.get("hire_date", "").strip()
+    position = request.POST.get("position", "").strip()
+
+    if not dni:
+        return JsonResponse({"error": "DNI es requerido."}, status=400)
+
+    # Buscar el usuario por DNI (asumiendo que `doc_id` es el DNI en Profile)
+    try:
+        profile = Profile.objects.get(doc_id=dni)
+        user = profile.user
+    except Profile.DoesNotExist:
+        # Opcional: crear usuario si no existe
+        # user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, email=email)
+        # profile = Profile.objects.create(user=user, doc_id=dni)
+        return JsonResponse({"error": "Usuario no encontrado con ese DNI."}, status=404)
+
+    # Actualizar datos de User
+    user.first_name = first_name
+    user.last_name = last_name
+    user.email = email
+    user.username = username
+    user.save()
+
+    # Actualizar datos de Profile
+    profile.phone = phone
+    if birth_date:
+        from datetime import datetime
+        profile.birth_date = datetime.strptime(birth_date, "%Y-%m-%d").date()
+    profile.address = address
+    if hire_date:
+        profile.hire_date = datetime.strptime(hire_date, "%Y-%m-%d").date()
+    profile.position = position
+    profile.save()
+
+    return JsonResponse({"success": True, "message": "Datos actualizados correctamente."})

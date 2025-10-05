@@ -1,67 +1,125 @@
-{% extends "base/base_dashboard.html" %}
+{% extends 'base/base_dashboard.html' %}
 {% load static %}
+
+{% block title %}Empleados{% endblock %}
+
 {% block inner_content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="bi bi-person-badge-fill me-2"></i> Lista de Empleados
+    </h5>
+  </div>
 
-<h2 class="text-lg font-semibold mb-4">
-  <i class="bi bi-person-badge me-2"></i>Gestión de Empleados
-</h2>
-
-<!-- Filtros -->
-<div class="d-flex justify-between items-center mb-4">
-  <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre o DNI...">
-  <select id="roleFilter" class="form-select w-60 ms-3">
-    <option value="">— Filtrar por rol —</option>
-    {% for r in roles %}
-      <option value="{{ r.id }}">{{ r.get_role_type_display }}</option>
-    {% endfor %}
-  </select>
-</div>
-
-<!-- Tabla de empleados -->
-<div class="card shadow-sm border-0">
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-hover mb-0 align-middle text-center">
-        <thead class="table-light">
-          <tr>
-            <th>Nombre</th>
-            <th>DNI/RUC</th>
-            <th>Teléfono</th>
-            <th>F. Nacimiento</th>
-            <th>F. Ingreso</th>
-            <th>Dirección</th>
-            <th>Cargo</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="employeeTable">
-          {% include "users/_employee_table.html" %}
-        </tbody>
-      </table>
+  {% if messages %}
+    <div class="px-3 pt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
     </div>
+  {% endif %}
+
+  <div class="card-body">
+    <table
+      id="employeesTable"
+      class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
+        <tr>
+          <th data-field="fullname" data-sortable="true">Nombre completo</th>
+          <th data-field="username" data-sortable="true">Usuario</th>
+          <th data-field="email" data-sortable="true">Email</th>
+          <th data-field="dni" data-sortable="true">DNI/RUC</th>
+          <th data-field="phone" data-sortable="true">Teléfono</th>
+          <th data-field="birth" data-sortable="true">F. Nacimiento</th>
+          <th data-field="entry" data-sortable="true">F. Ingreso</th>
+          <th data-field="address" data-sortable="true">Dirección</th>
+          <th data-field="role" data-sortable="true">Cargo</th>
+          <th data-field="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in employees %}
+        <tr>
+          <!-- User -->
+          <td class="fw-semibold">{{ e.user.get_full_name|default:"—" }}</td>
+          <td>{{ e.user.username }}</td>
+          <td>{{ e.user.email|default:"—" }}</td>
+
+          <!-- Profile -->
+          <td>{{ e.dni|default:"—" }}</td>
+          <td>{{ e.phone|default:"—" }}</td>
+          <td>{{ e.birth_date|date:"d-m-Y"|default:"—" }}</td>
+          <td>{{ e.entry_date|date:"d-m-Y"|default:"—" }}</td>
+          <td>{{ e.address|default:"—" }}</td>
+          <td>
+            {% if e.role %}
+              <span class="badge bg-primary-subtle text-primary">{{ e.role.get_role_type_display }}</span>
+            {% else %}
+              <span class="badge bg-secondary">Sin cargo</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'users:employee_update' e.id %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" class="text-center text-muted py-4">
+            <i class="bi bi-info-circle me-2"></i>No hay empleados registrados.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
-<!-- Script para filtros dinámicos -->
-<script>
-  const searchInput = document.getElementById("searchInput");
-  const roleFilter = document.getElementById("roleFilter");
+<!-- Estilos -->
+<style>
+  .table-header { background-color: #0d6efd; color: #fff; }
+  .table-header th { font-weight: 600; font-size: 0.9rem; }
+  table.table-hover tbody tr:hover { background-color: #eef5ff; }
 
-  function fetchFilteredEmployees() {
-    const q = searchInput.value;
-    const role = roleFilter.value;
+  /* Solo ocultamos el selector de “resultados por página”, NO los números */
+  .fixed-table-pagination .page-size { display: none !important; }
 
-    fetch(`?q=${q}&role=${role}`, {
-      headers: { 'x-requested-with': 'XMLHttpRequest' }
-    })
-    .then(response => response.json())
-    .then(data => {
-      document.getElementById("employeeTable").innerHTML = data.html;
-    });
+  .bootstrap-table .pagination .page-link {
+    border-radius: 50%; margin: 0 2px; color: #0d6efd;
   }
+  .bootstrap-table .pagination .active .page-link {
+    background-color: #0d6efd; color: #fff; border-color: #0d6efd;
+  }
+</style>
 
-  searchInput.addEventListener("input", fetchFilteredEmployees);
-  roleFilter.addEventListener("change", fetchFilteredEmployees);
+<!-- (Asegúrate de tener cargado el JS/CSS base de bootstrap-table en tu layout/base) -->
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
+<script>
+  // Si ves en consola "Cannot initialise the table more than once",
+  // usa 'destroy' antes de (re)inicializar:
+  // $('#employeesTable').bootstrapTable('destroy');
+
+  $('#employeesTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES',
+    // 👇 Mostrar solo "info" + lista de páginas (correcto: 'pageList')
+    paginationParts: ['pageInfo', 'pageList']
+  });
+
+  // Ocultar mensajes flash después de 2s
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.add('fade', 'show');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
 </script>
-
 {% endblock %}

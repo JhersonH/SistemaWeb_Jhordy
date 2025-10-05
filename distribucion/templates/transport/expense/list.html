@@ -20,16 +20,16 @@
     </div>
   {% endif %}
 
-  <div class="card-body p-0">
-    <table class="table table-striped mb-0 align-middle text-center">
-      <thead class="table-light">
+  <div class="card-body">
+    <table id="expensesTable" class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
         <tr>
-          <th>Viaje</th>
-          <th>Tipo</th>
-          <th>Monto</th>
-          <th>Comprobante</th>
-          <th>Fecha</th>
-          <th>Acciones</th>
+          <th data-field="trip" data-sortable="true">Viaje</th>
+          <th data-field="type" data-sortable="true">Tipo</th>
+          <th data-field="amount" data-sortable="true">Monto</th>
+          <th data-field="receipt">Comprobante</th>
+          <th data-field="date" data-sortable="true">Fecha</th>
+          <th data-field="actions">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -56,7 +56,9 @@
             <a href="{% url 'transport:expense_update' e.id %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
               <i class="bi bi-pencil-square"></i>
             </a>
-            <a href="{% url 'transport:expense_delete' e.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+            <a href="#" class="btn btn-sm btn-outline-danger"
+               onclick="confirmDelete('Gasto del viaje {{ e.trip.code }}', '{% url 'transport:expense_delete' e.id %}')"
+               title="Eliminar">
               <i class="bi bi-trash"></i>
             </a>
           </td>
@@ -73,7 +75,55 @@
   </div>
 </div>
 
+<!-- Estilos -->
+<style>
+  .table-header {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+</style>
+
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
+  // Inicializar tabla
+  $('#expensesTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES'
+  });
+
+  // Confirmación eliminar
+  function confirmDelete(item, url) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará: ${item}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = url;
+      }
+    });
+  }
+
+  // Ocultar mensajes flash
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
       alert.classList.add('fade', 'show');
@@ -81,5 +131,4 @@
     });
   }, 2000);
 </script>
-
 {% endblock %}

@@ -13,4 +13,7 @@ urlpatterns = [
     path("empleados/", views.employee_list, name="employee_list"),
     path("empleados/<int:pk>/editar/", views.employee_update, name="employee_update"),
     path("perfil/", views.profile_update, name="profile_update"),
+
+    path('ajax/load-user-data/', views.load_user_data_by_dni, name='ajax_load_user_data'),
+    path('ajax/save-profile-data/', views.save_profile_data_by_dni, name='ajax_save_profile_data'),
 ]

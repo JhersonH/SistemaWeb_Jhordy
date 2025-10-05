@@ -6,8 +6,12 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from distribution.decorators import role_required
 from .forms import *
-from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident, VehicleModel, VehicleBrand
+from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident, VehicleModel, VehicleBrand, StockLocation
 from django.http import JsonResponse
+
+import json
+import os
+from django.conf import settings
 
 # ---------------- VEHICLES ----------------
 @method_decorator([login_required, role_required(['ops_manager', 'warehouse_manager', 'viewer'])], name='dispatch')
@@ -81,8 +85,13 @@ def driver_list(request):
 def driver_create(request):
     form = DriverForm(request.POST or None)
     if form.is_valid():
-        form.save()
-        return redirect('transport:driver_list')
+        user = form.cleaned_data['user']
+
+        if not hasattr(user, 'profile') or not user.profile.role or user.profile.role.role_type != 'driver':
+            form.add_error('user', 'El usuario seleccionado no tiene rol de conductor.')
+        else:
+            form.save()
+            return redirect('transport:driver_list')
     return render(request, 'transport/driver_form.html', {'form': form, 'title': 'Nuevo Conductor'})
 
 
@@ -359,3 +368,101 @@ def incident_delete(request, pk):
         messages.success(request, "Incidente eliminado.")
         return redirect('transport:incident_list')
     return render(request, 'transport/incidents/confirm_delete.html', {'object': incident})
+
+@login_required
+def load_vehicle_data_by_plate(request):
+    """
+    Vista que devuelve el JSON de vehículos filtrado por placa.
+    Útil para autocompletado basado en placa.
+    """
+    json_path = os.path.join(settings.BASE_DIR, 'transport', 'vehicle_api.json')
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return JsonResponse({"error": "Archivo vehicle_api.json no encontrado."}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Error al leer el archivo JSON."}, status=500)
+
+    placa = request.GET.get("placa", "").strip().upper()
+    if placa:
+        vehiculo = data.get(placa)
+        if vehiculo:
+            return JsonResponse(vehiculo)
+        else:
+            return JsonResponse({"error": "Placa no encontrada"}, status=404)
+
+    return JsonResponse(data)
+
+@login_required
+def load_driver_data_by_user(request):
+    """
+    Vista que devuelve datos del conductor por username.
+    Útil para autocompletado basado en usuario.
+    """
+    json_path = os.path.join(settings.BASE_DIR, 'transport', 'driver_api.json')
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return JsonResponse({"error": "Archivo driver_api.json no encontrado."}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Error al leer el archivo JSON."}, status=500)
+
+    username = request.GET.get("username", "").strip()
+    if username:
+        conductor = data.get(username)
+        if conductor:
+            return JsonResponse(conductor)
+        else:
+            return JsonResponse({"error": "Usuario no encontrado en la base de datos."}, status=404)
+
+    return JsonResponse(data)
+
+@login_required
+def load_route_data_by_locations(request):
+    """
+    Vista que devuelve la distancia y ETA entre origen y destino.
+    Útil para autocompletado basado en ubicaciones.
+    """
+    json_path = os.path.join(settings.BASE_DIR, 'transport', 'route_distances.json')
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return JsonResponse({"error": "Archivo route_distances.json no encontrado."}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Error al leer el archivo JSON."}, status=500)
+
+    origin_id = request.GET.get("origin", "").strip()
+    destination_id = request.GET.get("destination", "").strip()
+
+    if not origin_id or not destination_id:
+        return JsonResponse({"error": "Faltan parámetros 'origin' o 'destination'."}, status=400)
+
+    try:
+        origin_obj = StockLocation.objects.get(id=origin_id)
+        destination_obj = StockLocation.objects.get(id=destination_id)
+    except StockLocation.DoesNotExist:
+        return JsonResponse({"error": "Origen o destino no encontrado."}, status=404)
+
+    origin_name = origin_obj.name
+    destination_name = destination_obj.name
+
+    # Crear clave como "Origin - Destination"
+    key = f"{origin_name} - {destination_name}"
+
+    # Buscar también en reversa si no encuentra
+    reverse_key = f"{destination_name} - {origin_name}"
+    route_data = data.get(key) or data.get(reverse_key)
+
+    if route_data:
+        return JsonResponse(route_data)
+    else:
+        return JsonResponse({
+            "distance_km": 0,
+            "eta_minutes": 0
+        })

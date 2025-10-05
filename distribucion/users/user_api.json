@@ -1,0 +1,222 @@
+{
+  "12345678": {
+    "first_name": "Juan",
+    "last_name": "Pérez",
+    "email": "juan.perez@example.com",
+    "username": "juanperez",
+    "phone": "+51987654321",
+    "birth_date": "1990-05-15",
+    "address": "Av. Los Incas 123, Lima",
+    "hire_date": "2020-03-10",
+    "position": "Chofer"
+  },
+  "87654321": {
+    "first_name": "María",
+    "last_name": "Gómez",
+    "email": "maria.gomez@example.com",
+    "username": "mariagomez",
+    "phone": "+51987654322",
+    "birth_date": "1988-11-22",
+    "address": "Calle Las Flores 456, Arequipa",
+    "hire_date": "2019-07-15",
+    "position": "Asistente"
+  },
+  "11223344": {
+    "first_name": "Carlos",
+    "last_name": "López",
+    "email": "carlos.lopez@example.com",
+    "username": "carloslopez",
+    "phone": "+51987654323",
+    "birth_date": "1992-01-30",
+    "address": "Jr. Puno 789, Cusco",
+    "hire_date": "2021-01-20",
+    "position": "Supervisor"
+  },
+  "44332211": {
+    "first_name": "Ana",
+    "last_name": "Martínez",
+    "email": "ana.martinez@example.com",
+    "username": "anamartinez",
+    "phone": "+51987654324",
+    "birth_date": "1995-08-10",
+    "address": "Av. Brasil 321, Trujillo",
+    "hire_date": "2018-09-05",
+    "position": "Operario"
+  },
+  "55667788": {
+    "first_name": "Luis",
+    "last_name": "Hernández",
+    "email": "luis.hernandez@example.com",
+    "username": "luishernandez",
+    "phone": "+51987654325",
+    "birth_date": "1985-12-03",
+    "address": "Calle Los Sauces 654, Piura",
+    "hire_date": "2017-04-12",
+    "position": "Jefe de Almacén"
+  },
+  "88776655": {
+    "first_name": "Laura",
+    "last_name": "Díaz",
+    "email": "laura.diaz@example.com",
+    "username": "lauradiaz",
+    "phone": "+51987654326",
+    "birth_date": "1993-06-18",
+    "address": "Av. Universitaria 987, Chiclayo",
+    "hire_date": "2020-11-25",
+    "position": "Asistente"
+  },
+  "12121212": {
+    "first_name": "Pedro",
+    "last_name": "Sánchez",
+    "email": "pedro.sanchez@example.com",
+    "username": "pedrosanchez",
+    "phone": "+51987654327",
+    "birth_date": "1987-09-07",
+    "address": "Calle Los Pinos 147, Ica",
+    "hire_date": "2019-02-14",
+    "position": "Chofer"
+  },
+  "21212121": {
+    "first_name": "Carmen",
+    "last_name": "Ramírez",
+    "email": "carmen.ramirez@example.com",
+    "username": "carmenramirez",
+    "phone": "+51987654328",
+    "birth_date": "1991-03-25",
+    "address": "Jr. Tacna 258, Huancayo",
+    "hire_date": "2021-05-30",
+    "position": "Secretaria"
+  },
+  "33445566": {
+    "first_name": "Javier",
+    "last_name": "Torres",
+    "email": "javier.torres@example.com",
+    "username": "javiertorres",
+    "phone": "+51987654329",
+    "birth_date": "1989-10-12",
+    "address": "Av. San Martín 369, Puno",
+    "hire_date": "2018-08-17",
+    "position": "Supervisor"
+  },
+  "66554433": {
+    "first_name": "Elena",
+    "last_name": "Flores",
+    "email": "elena.flores@example.com",
+    "username": "elenaflores",
+    "phone": "+51987654330",
+    "birth_date": "1994-04-09",
+    "address": "Calle Los Álamos 741, Tacna",
+    "hire_date": "2020-06-08",
+    "position": "Asistente"
+  },
+  "77889900": {
+    "first_name": "Miguel",
+    "last_name": "Ruiz",
+    "email": "miguel.ruiz@example.com",
+    "username": "miguelruiz",
+    "phone": "+51987654331",
+    "birth_date": "1986-07-21",
+    "address": "Av. Progreso 852, Cajamarca",
+    "hire_date": "2016-10-10",
+    "position": "Jefe de Operaciones"
+  },
+  "00998877": {
+    "first_name": "Sofía",
+    "last_name": "Jiménez",
+    "email": "sofia.jimenez@example.com",
+    "username": "sofiajimenez",
+    "phone": "+51987654332",
+    "birth_date": "1996-02-14",
+    "address": "Calle Los Girasoles 963, Ayacucho",
+    "hire_date": "2022-01-15",
+    "position": "Operario"
+  },
+  "13579246": {
+    "first_name": "Andrés",
+    "last_name": "Chávez",
+    "email": "andres.chavez@example.com",
+    "username": "andreschavez",
+    "phone": "+51987654333",
+    "birth_date": "1990-12-01",
+    "address": "Av. Los Perales 159, Huánuco",
+    "hire_date": "2019-11-30",
+    "position": "Chofer"
+  },
+  "64297531": {
+    "first_name": "Valeria",
+    "last_name": "Ortiz",
+    "email": "valeria.ortiz@example.com",
+    "username": "valeriaortiz",
+    "phone": "+51987654334",
+    "birth_date": "1993-05-17",
+    "address": "Calle Las Rosas 357, Tumbes",
+    "hire_date": "2021-03-22",
+    "position": "Asistente"
+  },
+  "24681357": {
+    "first_name": "Gabriel",
+    "last_name": "Castillo",
+    "email": "gabriel.castillo@example.com",
+    "username": "gabrielcastillo",
+    "phone": "+51987654335",
+    "birth_date": "1988-08-29",
+    "address": "Jr. Amazonas 159, Madre de Dios",
+    "hire_date": "2018-05-05",
+    "position": "Supervisor"
+  },
+  "75319246": {
+    "first_name": "Isabel",
+    "last_name": "Vargas",
+    "email": "isabel.vargas@example.com",
+    "username": "isabelvargas",
+    "phone": "+51987654336",
+    "birth_date": "1995-11-08",
+    "address": "Av. Los Laureles 951, Loreto",
+    "hire_date": "2020-12-01",
+    "position": "Secretaria"
+  },
+  "98765432": {
+    "first_name": "Ricardo",
+    "last_name": "Mendoza",
+    "email": "ricardo.mendoza@example.com",
+    "username": "ricardomendoza",
+    "phone": "+51987654337",
+    "birth_date": "1984-04-20",
+    "address": "Calle Los Nogales 753, San Martín",
+    "hire_date": "2015-09-15",
+    "position": "Jefe de Almacén"
+  },
+  "23456789": {
+    "first_name": "Patricia",
+    "last_name": "Aguilar",
+    "email": "patricia.aguilar@example.com",
+    "username": "patriciaaguilar",
+    "phone": "+51987654338",
+    "birth_date": "1992-07-11",
+    "address": "Av. Los Cerezos 159, Amazonas",
+    "hire_date": "2021-07-10",
+    "position": "Operario"
+  },
+  "98761234": {
+    "first_name": "Fernando",
+    "last_name": "Silva",
+    "email": "fernando.silva@example.com",
+    "username": "fernandosilva",
+    "phone": "+51987654339",
+    "birth_date": "1989-10-05",
+    "address": "Calle Las Magnolias 357, Apurímac",
+    "hire_date": "2019-04-25",
+    "position": "Chofer"
+  },
+  "12349876": {
+    "first_name": "Claudia",
+    "last_name": "Romero",
+    "email": "claudia.romero@example.com",
+    "username": "claudiaromero",
+    "phone": "+51987654340",
+    "birth_date": "1994-01-28",
+    "address": "Jr. Los Robles 951, Ayacucho",
+    "hire_date": "2020-10-18",
+    "position": "Asistente"
+  }
+}

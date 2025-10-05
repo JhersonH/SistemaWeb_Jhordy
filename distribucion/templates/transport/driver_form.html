@@ -56,4 +56,65 @@
     });
   });
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const userSelect = document.getElementById('id_user');
+
+    if (userSelect) {
+      userSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const username = selectedOption.textContent.split('(')[0].trim(); // Extrae "driver test"
+
+        if (!username) {
+          // Si no hay usuario seleccionado, vaciar campos
+          document.getElementById('id_license_number').value = '';
+          document.getElementById('id_license_category').value = '';
+          document.getElementById('id_license_expiry').value = '';
+          return;
+        }
+
+        fetch(`{% url 'transport:ajax_load_driver_data' %}?username=${encodeURIComponent(username)}`)
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else if (response.status === 404) {
+              return null; // No encontrado
+            } else {
+              throw new Error("Error en la respuesta del servidor.");
+            }
+          })
+          .then(data => {
+            if (data) {
+              // ✅ Llenar campos si hay coincidencia
+              document.getElementById('id_license_number').value = data.license || '';
+              document.getElementById('id_license_category').value = data.license_category || '';
+              document.getElementById('id_license_expiry').value = data.license_expiry || '';
+
+              // Forzar actualización del datepicker si existe
+              if (typeof flatpickr !== 'undefined') {
+                const expiryInput = document.getElementById('id_license_expiry');
+                if (expiryInput._flatpickr) {
+                  expiryInput._flatpickr.setDate(data.license_expiry || '');
+                }
+              }
+            } else {
+              // ✅ Vaciar campos si no hay coincidencia
+              document.getElementById('id_license_number').value = '';
+              document.getElementById('id_license_category').value = '';
+              document.getElementById('id_license_expiry').value = '';
+            }
+          })
+          .catch(error => {
+            console.error("Error al cargar datos del conductor:", error);
+            // Opcional: Vaciar campos en caso de error
+            document.getElementById('id_license_number').value = '';
+            document.getElementById('id_license_category').value = '';
+            document.getElementById('id_license_expiry').value = '';
+          });
+      });
+    }
+  });
+</script>
+
 {% endblock %}

@@ -1,7 +1,8 @@
 from django import forms
 from .models import Vehicle, Driver, Route, Trip, Stop, Expense, Incident
 from django.forms import inlineformset_factory
-from .models import TripProduct
+from .models import TripProduct, User
+from roles.models import Role
 
 class VehicleForm(forms.ModelForm):
     class Meta:
@@ -62,6 +63,26 @@ class DriverForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['license_expiry'].input_formats = ['%d-%m-%Y']
+
+        try:
+            driver_role = Role.objects.get(role_type='driver')
+        except Role.DoesNotExist:
+            driver_role = None
+
+        if driver_role:
+            # Filtrar usuarios cuyo perfil tenga el rol "driver"
+            self.fields['user'].queryset = User.objects.filter(
+                profile__role=driver_role
+            ).order_by('first_name', 'last_name', 'username')
+        else:
+            # Si no existe el rol "driver", no mostrar usuarios
+            self.fields['user'].queryset = User.objects.none()
+            self.fields['user'].help_text = "No se encontró el rol 'driver'. Por favor, créalo en el sistema."
+
+            # Opcional: Personalizar cómo se muestra cada opción
+        self.fields['user'].label_from_instance = lambda obj: (
+            f"{obj.get_full_name() or obj.username} ({obj.username})"
+        )
 
 class RouteForm(forms.ModelForm):
     class Meta:

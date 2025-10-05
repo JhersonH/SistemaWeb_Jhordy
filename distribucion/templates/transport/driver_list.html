@@ -18,65 +18,116 @@
     </div>
   {% endif %}
 
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-0">
-      <table class="table table-striped mb-0 align-middle text-center">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Usuario</th>
-            <th scope="col">N° Licencia</th>
-            <th scope="col">Categoría</th>
-            <th scope="col">Vence</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for d in drivers %}
-          <tr>
-            <td class="fw-bold">
-              <i class="bi bi-person-circle me-1 text-primary"></i>
-              {{ d.user.get_full_name }}
-            </td>
-            <td>{{ d.license_number }}</td>
-            <td><span class="badge bg-info text-dark">{{ d.license_category }}</span></td>
-            <td>
-              {% if d.license_expiry %}
-                <span class="badge bg-light text-muted">{{ d.license_expiry|date:"d-m-Y" }}</span>
-              {% else %}
-                <span class="text-muted">No especificado</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if d.active %}
-                <span class="badge bg-success">Activo</span>
-              {% else %}
-                <span class="badge bg-secondary">Inactivo</span>
-              {% endif %}
-            </td>
-            <td>
-              <a href="{% url 'transport:driver_update' d.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <a href="{% url 'transport:driver_delete' d.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                <i class="bi bi-trash"></i>
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="6" class="text-center text-muted py-4">
-              <i class="bi bi-info-circle me-2"></i>No hay conductores registrados.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="card-body">
+    <table
+      id="driversTable"
+      class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
+        <tr>
+          <th data-field="user" data-sortable="true">Usuario</th>
+          <th data-field="license_number" data-sortable="true">N° Licencia</th>
+          <th data-field="category" data-sortable="true">Categoría</th>
+          <th data-field="expiry" data-sortable="true">Vence</th>
+          <th data-field="status" data-sortable="true">Estado</th>
+          <th data-field="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in drivers %}
+        <tr>
+          <td class="fw-bold">
+            <i class="bi bi-person-circle me-1 text-primary"></i>
+            {{ d.user.get_full_name }}
+          </td>
+          <td>{{ d.license_number }}</td>
+          <td><span class="badge bg-info text-dark">{{ d.license_category }}</span></td>
+          <td>
+            {% if d.license_expiry %}
+              <span class="badge bg-light text-muted">{{ d.license_expiry|date:"d-m-Y" }}</span>
+            {% else %}
+              <span class="text-muted">No especificado</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if d.active %}
+              <span class="badge bg-success">Activo</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'transport:driver_update' d.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{% url 'transport:driver_delete' d.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            <i class="bi bi-info-circle me-2"></i>No hay conductores registrados.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
+<!-- Estilos personalizados -->
+<style>
+  /* Encabezado */
+  .table-header {
+    background-color: #0d6efd; /* Azul Bootstrap */
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Hover filas */
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+
+  /* Buscador */
+  .bootstrap-table .search input {
+    border-radius: 6px;
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+  }
+
+  /* Paginación */
+  .bootstrap-table .pagination .page-link {
+    border-radius: 50%;
+    margin: 0 2px;
+    color: #0d6efd;
+  }
+  .bootstrap-table .pagination .active .page-link {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+  }
+</style>
+
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
+  $('#driversTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES' // 👈 ahora sí se activa en español
+  });
+
+  // Ocultar mensajes flash después de 2s
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
       alert.classList.add('fade', 'show');
@@ -84,5 +135,4 @@
     });
   }, 2000);
 </script>
-
 {% endblock %}

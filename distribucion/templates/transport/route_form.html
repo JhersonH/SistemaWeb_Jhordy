@@ -38,4 +38,50 @@
     </div>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const originSelect = document.getElementById('id_origin');
+    const destinationSelect = document.getElementById('id_destination');
+
+    if (originSelect && destinationSelect) {
+      // Escuchar cambios en ambos campos
+      const updateRouteData = function() {
+        const originId = originSelect.value.trim();
+        const destinationId = destinationSelect.value.trim();
+
+        if (!originId || !destinationId) {
+          // Vaciar campos si falta alguno
+          document.getElementById('id_distance_km').value = '0';
+          document.getElementById('id_eta_minutes').value = '0';
+          return;
+        }
+
+        fetch(`{% url 'transport:ajax_load_route_data' %}?origin=${encodeURIComponent(originId)}&destination=${encodeURIComponent(destinationId)}`)
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error("Error en la respuesta del servidor.");
+            }
+          })
+          .then(data => {
+            if (data) {
+              document.getElementById('id_distance_km').value = data.distance_km || 0;
+              document.getElementById('id_eta_minutes').value = data.eta_minutes || 0;
+            }
+          })
+          .catch(error => {
+            console.error("Error al cargar datos de la ruta:", error);
+            document.getElementById('id_distance_km').value = '0';
+            document.getElementById('id_eta_minutes').value = '0';
+          });
+      };
+
+      originSelect.addEventListener('change', updateRouteData);
+      destinationSelect.addEventListener('change', updateRouteData);
+    }
+  });
+</script>
+
 {% endblock %}

@@ -18,17 +18,19 @@
     </div>
   {% endif %}
 
-  <div class="card-body p-0">
-    <table class="table table-striped mb-0 align-middle text-center">
-      <thead class="table-light">
+  <div class="card-body">
+    <table
+      id="tripsTable"
+      class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-header">
         <tr>
-          <th scope="col">Código</th>
-          <th scope="col">Fecha</th>
-          <th scope="col">Ruta</th>
-          <th scope="col">Vehículo</th>
-          <th scope="col">Conductor</th>
-          <th scope="col">Estado</th>
-          <th scope="col">Acciones</th>
+          <th data-field="code" data-sortable="true">Código</th>
+          <th data-field="date" data-sortable="true">Fecha</th>
+          <th data-field="route" data-sortable="true">Ruta</th>
+          <th data-field="vehicle" data-sortable="true">Vehículo</th>
+          <th data-field="driver" data-sortable="true">Conductor</th>
+          <th data-field="status" data-sortable="true">Estado</th>
+          <th data-field="actions">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -83,7 +85,58 @@
   </div>
 </div>
 
+<!-- Estilos personalizados -->
+<style>
+  /* Encabezado */
+  .table-header {
+    background-color: #0d6efd; /* Azul Bootstrap */
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Hover filas */
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+
+  /* Buscador */
+  .bootstrap-table .search input {
+    border-radius: 6px;
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+  }
+
+  /* Paginación */
+  .bootstrap-table .pagination .page-link {
+    border-radius: 50%;
+    margin: 0 2px;
+    color: #0d6efd;
+  }
+  .bootstrap-table .pagination .active .page-link {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+  }
+</style>
+
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
+  $('#tripsTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 5,
+    pageList: [5, 10, 25, 50],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES' // 👈 idioma en español
+  });
+
+  // Ocultar mensajes flash después de 2s
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
       alert.classList.add('fade', 'show');
@@ -91,5 +144,4 @@
     });
   }, 2000);
 </script>
-
 {% endblock %}

@@ -10,6 +10,7 @@
     </h5>
   </div>
 
+  <!-- Filtro -->
   <div class="px-3 pt-3">
     <form method="get" class="row g-2 mb-3">
       <div class="col-md-6 col-lg-4">
@@ -20,29 +21,27 @@
 
   <div class="card shadow-sm border-0">
     <div class="card-body p-0">
-      <table class="table table-striped text-center mb-0 align-middle">
-        <thead class="table-light">
+      <table id="kardexTable" class="table table-hover table-bordered text-center mb-0 align-middle">
+        <thead class="table-header">
           <tr>
-            <th>Fecha</th>
-            <th>Producto</th>
-            <th>Ubicación</th>
-            <th>Tipo</th>
-            <th>Cantidad</th>
-            <th>Saldo</th>
-            <th>Observaciones</th>
+            <th data-field="date" data-sortable="true">Fecha</th>
+            <th data-field="product" data-sortable="true">Producto</th>
+            <th data-field="location" data-sortable="true">Ubicación</th>
+            <th data-field="type" data-sortable="true">Tipo</th>
+            <th data-field="quantity" data-sortable="true">Cantidad</th>
+            <th data-field="balance" data-sortable="true">Saldo</th>
+            <th data-field="reference">Observaciones</th>
           </tr>
         </thead>
         <tbody id="kardexBody">
           {% for entry in entries %}
           <tr>
             <td>{{ entry.date|date:"d/m/Y H:i" }}</td>
-            <td class="fw-bold">
-              <i class="bi bi-box me-1 text-primary"></i>
-              {{ entry.product.name }}
+            <td class="fw-bold text-primary">
+              <i class="bi bi-box me-1"></i>{{ entry.product.name }}
             </td>
             <td>
-              <i class="bi bi-geo-alt me-1 text-secondary"></i>
-              {{ entry.location.name }}
+              <i class="bi bi-geo-alt me-1 text-secondary"></i>{{ entry.location.name }}
             </td>
             <td>
               {% if entry.entry_type == 'input' %}
@@ -50,7 +49,7 @@
               {% elif entry.entry_type == 'output' %}
                 <span class="badge bg-danger">Salida</span>
               {% elif entry.entry_type == 'adjustment' %}
-                <span class="badge bg-warning">Ajuste</span>
+                <span class="badge bg-warning text-dark">Ajuste</span>
               {% endif %}
             </td>
             <td>{{ entry.quantity }}</td>
@@ -70,46 +69,78 @@
   </div>
 </div>
 
+<!-- Estilos -->
+<style>
+  .table-header {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+  .table-header th {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  table.table-hover tbody tr:hover {
+    background-color: #eef5ff;
+  }
+</style>
+
+<!-- Idioma español -->
+<script src="https://unpkg.com/bootstrap-table@1.22.1/dist/locale/bootstrap-table-es-ES.min.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const select = document.querySelector("#id_product");
-  const tbody = document.querySelector("#kardexBody");
+  // Inicializar tabla interactiva
+  $('#kardexTable').bootstrapTable({
+    search: true,
+    pagination: true,
+    pageSize: 10,
+    pageList: [10, 25, 50, 100],
+    showColumns: true,
+    showToggle: true,
+    locale: 'es-ES'
+  });
 
-  select.addEventListener("change", function() {
-    const productId = this.value;
-    if (!productId) {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-muted">Seleccione un producto para ver movimientos.</td></tr>';
-      return;
-    }
+  // Filtro dinámico con fetch
+  document.addEventListener("DOMContentLoaded", function() {
+    const select = document.querySelector("#id_product");
+    const tbody = document.querySelector("#kardexBody");
 
-    fetch(`/kardex/api/${productId}/`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.entries.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-muted">No hay registros para este producto.</td></tr>';
+    if (select) {
+      select.addEventListener("change", function() {
+        const productId = this.value;
+        if (!productId) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-muted">Seleccione un producto para ver movimientos.</td></tr>';
           return;
         }
 
-        tbody.innerHTML = "";
-        data.entries.forEach(entry => {
-          tbody.innerHTML += `
-            <tr>
-              <td>${entry.date}</td>
-              <td>${entry.product}</td>
-              <td>${entry.location}</td>
-              <td>
-                <span class="badge ${entry.entry_type === "Entrada" ? "bg-success" : entry.entry_type === "Salida" ? "bg-danger" : "bg-secondary"}">
-                  ${entry.entry_type}
-                </span>
-              </td>
-              <td>${entry.quantity}</td>
-              <td>${entry.balance}</td>
-              <td>${entry.reference}</td>
-            </tr>
-          `;
-        });
+        fetch(`/kardex/api/${productId}/`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.entries.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="7" class="text-muted">No hay registros para este producto.</td></tr>';
+              return;
+            }
+
+            tbody.innerHTML = "";
+            data.entries.forEach(entry => {
+              const badgeClass =
+                entry.entry_type === "Entrada" ? "bg-success" :
+                entry.entry_type === "Salida" ? "bg-danger" : "bg-warning text-dark";
+
+              tbody.innerHTML += `
+                <tr>
+                  <td>${entry.date}</td>
+                  <td class="fw-bold text-primary"><i class="bi bi-box me-1"></i>${entry.product}</td>
+                  <td><i class="bi bi-geo-alt me-1 text-secondary"></i>${entry.location}</td>
+                  <td><span class="badge ${badgeClass}">${entry.entry_type}</span></td>
+                  <td>${entry.quantity}</td>
+                  <td>${entry.balance}</td>
+                  <td>${entry.reference || "—"}</td>
+                </tr>
+              `;
+            });
+          });
       });
+    }
   });
-});
 </script>
 {% endblock %}
